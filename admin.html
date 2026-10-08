@@ -94,33 +94,82 @@
         
         <!-- SECTION 1: DASHBOARD -->
         <div id="section-dashboard">
-          <div class="stat-grid">
-            <div class="stat-card">
-              <div class="stat-icon primary"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+          <!-- Revenue Metrics Grid -->
+          <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:0.95rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted);">
+              <i class="fa-solid fa-chart-line" style="color:var(--primary);"></i> Revenue & Sales Metrics
+            </h3>
+            <span class="badge badge-teal" id="adm-today-date-badge">Live Financial Tracking</span>
+          </div>
+
+          <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));">
+            <!-- 1. Current Day Revenue -->
+            <div class="stat-card" style="border-top: 3px solid var(--emerald);">
+              <div class="stat-icon emerald"><i class="fa-solid fa-calendar-day"></i></div>
               <div class="stat-info">
-                <p>Total Revenue</p>
-                <h3 id="adm-stat-revenue">₹0</h3>
+                <p style="color:var(--emerald);">Current Day (Today)</p>
+                <h3 id="adm-stat-today-revenue" style="color:var(--text-main);">₹0</h3>
+                <small style="color:var(--text-muted); font-size:0.75rem;" id="adm-stat-today-sub">Coll: ₹0</small>
               </div>
             </div>
-            <div class="stat-card">
+
+            <!-- 2. Last Day Revenue -->
+            <div class="stat-card" style="border-top: 3px solid var(--primary);">
+              <div class="stat-icon primary"><i class="fa-solid fa-clock-rotate-left"></i></div>
+              <div class="stat-info">
+                <p style="color:var(--primary);">Last Day (Yesterday)</p>
+                <h3 id="adm-stat-yesterday-revenue" style="color:var(--text-main);">₹0</h3>
+                <small style="color:var(--text-muted); font-size:0.75rem;" id="adm-stat-yest-sub">Coll: ₹0</small>
+              </div>
+            </div>
+
+            <!-- 3. Last Week Revenue -->
+            <div class="stat-card" style="border-top: 3px solid var(--purple);">
+              <div class="stat-icon" style="background:var(--purple-light); color:var(--purple);"><i class="fa-solid fa-calendar-week"></i></div>
+              <div class="stat-info">
+                <p style="color:var(--purple);">Last Week (7 Days)</p>
+                <h3 id="adm-stat-week-revenue" style="color:var(--text-main);">₹0</h3>
+                <small style="color:var(--text-muted); font-size:0.75rem;" id="adm-stat-week-sub">Coll: ₹0</small>
+              </div>
+            </div>
+
+            <!-- 4. Total Lifetime Revenue -->
+            <div class="stat-card" style="border-top: 3px solid var(--amber);">
+              <div class="stat-icon amber"><i class="fa-solid fa-vault"></i></div>
+              <div class="stat-info">
+                <p style="color:#b45309;">Total All-Time</p>
+                <h3 id="adm-stat-revenue">₹0</h3>
+                <small style="color:var(--text-muted); font-size:0.75rem;" id="adm-stat-total-sub">Lifetime Sales</small>
+              </div>
+            </div>
+
+            <!-- 5. Pending Dues -->
+            <div class="stat-card" style="border-top: 3px solid var(--rose);">
               <div class="stat-icon rose"><i class="fa-solid fa-hand-holding-dollar"></i></div>
               <div class="stat-info">
-                <p>Pending Receivables</p>
-                <h3 id="adm-stat-dues">₹0</h3>
+                <p style="color:var(--rose);">Pending Receivables</p>
+                <h3 id="adm-stat-dues" style="color:var(--rose);">₹0</h3>
+                <small style="color:var(--rose); font-size:0.75rem;">Balance Due</small>
               </div>
             </div>
+
+            <!-- 6. Total Optical Jobs -->
             <div class="stat-card">
-              <div class="stat-icon teal"><i class="fa-solid fa-users"></i></div>
+              <div class="stat-icon teal"><i class="fa-solid fa-glasses"></i></div>
+              <div class="stat-info">
+                <p>Optical Jobs</p>
+                <h3 id="adm-stat-jobs">0</h3>
+                <small style="color:var(--text-muted); font-size:0.75rem;">Workshop Orders</small>
+              </div>
+            </div>
+
+            <!-- 7. Registered Patients -->
+            <div class="stat-card">
+              <div class="stat-icon primary"><i class="fa-solid fa-users"></i></div>
               <div class="stat-info">
                 <p>Registered Patients</p>
                 <h3 id="adm-stat-patients">0</h3>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon emerald"><i class="fa-solid fa-glasses"></i></div>
-              <div class="stat-info">
-                <p>Total Optical Jobs</p>
-                <h3 id="adm-stat-jobs">0</h3>
+                <small style="color:var(--text-muted); font-size:0.75rem;">OPD Records</small>
               </div>
             </div>
           </div>
@@ -226,6 +275,35 @@
 
         <!-- SECTION 5: BILLING & INVOICES -->
         <div id="section-billing" style="display:none;">
+          <!-- Revenue Breakdown Period Matrix -->
+          <div class="card" style="margin-bottom:20px; border-left: 4px solid var(--primary);">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title"><i class="fa-solid fa-chart-simple" style="color:var(--primary);"></i> Revenue & Collections Performance Summary</h3>
+                <small style="color:var(--text-muted);">Current Day vs Last Day vs Last Week vs Total Lifetime Comparative Analysis</small>
+              </div>
+              <span class="badge badge-success">Automated INR Reconciliation</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Performance Period</th>
+                    <th>Date / Time Window</th>
+                    <th>Invoiced Revenue</th>
+                    <th>Cash / UPI Collected</th>
+                    <th>Pending Dues</th>
+                    <th>Job Orders</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-revenue-matrix-tbody">
+                  <!-- Dynamically populated via AdminApp.renderMetrics() -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
           <div class="card">
             <div class="card-header">
               <h3 class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> Optical Tax Invoices & Payment Ledger</h3>

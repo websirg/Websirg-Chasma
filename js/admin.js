@@ -44,20 +44,106 @@ const AdminApp = {
 
   renderMetrics: function() {
     const db = window.BCGStore.getDB();
-    const invoices = db.invoices || [];
-    const jobs = db.optical_jobs || [];
-    const repairs = db.repairs || [];
+    const analytics = window.BCGStore.getRevenueAnalytics();
     const patients = db.patients || [];
+    const jobs = db.optical_jobs || [];
 
-    const totalRevenue = invoices.reduce((sum, inv) => sum + (inv.grandTotal || 0), 0) +
-                         repairs.reduce((sum, rep) => sum + (rep.finalCost || 0), 0);
-    const totalDues = invoices.reduce((sum, inv) => sum + (inv.dueAmount || 0), 0) +
-                      repairs.reduce((sum, rep) => sum + (rep.due || 0), 0);
+    // 1. Current Day (Today)
+    const elTodayRev = document.getElementById('adm-stat-today-revenue');
+    const elTodaySub = document.getElementById('adm-stat-today-sub');
+    if (elTodayRev) elTodayRev.textContent = BCGUI.formatCurrency(analytics.today.revenue);
+    if (elTodaySub) elTodaySub.textContent = `Coll: ${BCGUI.formatCurrency(analytics.today.collected)} (${analytics.today.ordersCount} orders)`;
 
-    document.getElementById('adm-stat-revenue').textContent = BCGUI.formatCurrency(totalRevenue);
-    document.getElementById('adm-stat-dues').textContent = BCGUI.formatCurrency(totalDues);
-    document.getElementById('adm-stat-patients').textContent = patients.length;
-    document.getElementById('adm-stat-jobs').textContent = jobs.length;
+    // 2. Last Day (Yesterday)
+    const elYestRev = document.getElementById('adm-stat-yesterday-revenue');
+    const elYestSub = document.getElementById('adm-stat-yest-sub');
+    if (elYestRev) elYestRev.textContent = BCGUI.formatCurrency(analytics.yesterday.revenue);
+    if (elYestSub) elYestSub.textContent = `Coll: ${BCGUI.formatCurrency(analytics.yesterday.collected)} (${analytics.yesterday.ordersCount} orders)`;
+
+    // 3. Last Week (Past 7 Days)
+    const elWeekRev = document.getElementById('adm-stat-week-revenue');
+    const elWeekSub = document.getElementById('adm-stat-week-sub');
+    if (elWeekRev) elWeekRev.textContent = BCGUI.formatCurrency(analytics.lastWeek.revenue);
+    if (elWeekSub) elWeekSub.textContent = `Coll: ${BCGUI.formatCurrency(analytics.lastWeek.collected)} (${analytics.lastWeek.ordersCount} orders)`;
+
+    // 4. Lifetime Total & Dues
+    const elTotalRev = document.getElementById('adm-stat-revenue');
+    const elTotalSub = document.getElementById('adm-stat-total-sub');
+    const elTotalDues = document.getElementById('adm-stat-dues');
+    if (elTotalRev) elTotalRev.textContent = BCGUI.formatCurrency(analytics.total.revenue);
+    if (elTotalSub) elTotalSub.textContent = `Lifetime: ${BCGUI.formatCurrency(analytics.total.collected)} collected`;
+    if (elTotalDues) elTotalDues.textContent = BCGUI.formatCurrency(analytics.total.dues);
+
+    // 5. Counts
+    const elPatients = document.getElementById('adm-stat-patients');
+    const elJobs = document.getElementById('adm-stat-jobs');
+    if (elPatients) elPatients.textContent = patients.length;
+    if (elJobs) elJobs.textContent = jobs.length;
+
+    // Today Date Badge
+    const elDateBadge = document.getElementById('adm-today-date-badge');
+    if (elDateBadge) {
+      const d = new Date();
+      elDateBadge.textContent = `Live Financials • ${d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+    }
+
+    // 6. Revenue Performance Matrix in Billing section
+    const matrixTbody = document.getElementById('adm-revenue-matrix-tbody');
+    if (matrixTbody) {
+      const todayDue = Math.max(0, analytics.today.revenue - analytics.today.collected);
+      const yestDue = Math.max(0, analytics.yesterday.revenue - analytics.yesterday.collected);
+      const weekDue = Math.max(0, analytics.lastWeek.revenue - analytics.lastWeek.collected);
+
+      matrixTbody.innerHTML = `
+        <tr style="background:#f0fdf4;">
+          <td>
+            <span class="badge badge-success" style="font-size:0.8rem;">Current Day</span>
+            <strong>Today's Business</strong>
+          </td>
+          <td><code>${analytics.today.date}</code></td>
+          <td><strong style="color:var(--emerald); font-size:1.05rem;">${BCGUI.formatCurrency(analytics.today.revenue)}</strong></td>
+          <td><strong style="color:var(--primary);">${BCGUI.formatCurrency(analytics.today.collected)}</strong></td>
+          <td style="color:${todayDue > 0 ? 'var(--rose)' : 'inherit'}; font-weight:700;">${BCGUI.formatCurrency(todayDue)}</td>
+          <td><strong>${analytics.today.ordersCount} Orders</strong></td>
+        </tr>
+
+        <tr style="background:#f0f9ff;">
+          <td>
+            <span class="badge badge-info" style="font-size:0.8rem;">Last Day</span>
+            <strong>Yesterday</strong>
+          </td>
+          <td><code>${analytics.yesterday.date}</code></td>
+          <td><strong style="color:var(--primary); font-size:1.05rem;">${BCGUI.formatCurrency(analytics.yesterday.revenue)}</strong></td>
+          <td><strong>${BCGUI.formatCurrency(analytics.yesterday.collected)}</strong></td>
+          <td style="color:${yestDue > 0 ? 'var(--rose)' : 'inherit'}; font-weight:700;">${BCGUI.formatCurrency(yestDue)}</td>
+          <td><strong>${analytics.yesterday.ordersCount} Orders</strong></td>
+        </tr>
+
+        <tr style="background:#faf5ff;">
+          <td>
+            <span class="badge badge-purple" style="font-size:0.8rem;">Last Week</span>
+            <strong>Past 7 Days Rolling</strong>
+          </td>
+          <td><small style="color:var(--text-muted);">${analytics.lastWeek.range}</small></td>
+          <td><strong style="color:var(--purple); font-size:1.05rem;">${BCGUI.formatCurrency(analytics.lastWeek.revenue)}</strong></td>
+          <td><strong>${BCGUI.formatCurrency(analytics.lastWeek.collected)}</strong></td>
+          <td style="color:${weekDue > 0 ? 'var(--rose)' : 'inherit'}; font-weight:700;">${BCGUI.formatCurrency(weekDue)}</td>
+          <td><strong>${analytics.lastWeek.ordersCount} Orders</strong></td>
+        </tr>
+
+        <tr style="background:#fffbeb; font-weight:700;">
+          <td>
+            <span class="badge badge-warning" style="font-size:0.8rem;">Lifetime Total</span>
+            <strong>All-Time Cumulative</strong>
+          </td>
+          <td>Full System History</td>
+          <td><strong style="color:#b45309; font-size:1.1rem;">${BCGUI.formatCurrency(analytics.total.revenue)}</strong></td>
+          <td><strong>${BCGUI.formatCurrency(analytics.total.collected)}</strong></td>
+          <td style="color:var(--rose); font-size:1.05rem;">${BCGUI.formatCurrency(analytics.total.dues)}</td>
+          <td><strong>${jobs.length + (db.repairs || []).length} Total</strong></td>
+        </tr>
+      `;
+    }
   },
 
   renderRecentJobs: function() {

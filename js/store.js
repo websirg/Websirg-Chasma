@@ -568,6 +568,28 @@ const defaultDatabase = {
 
   repairs: [
     {
+      id: "REP-00103",
+      patientId: "P-1002",
+      customerName: "Priya Patel",
+      customerPhone: "9812345678",
+      frameDescription: "Vogue Translucent Frame",
+      problem: "Nose pad adjustment and temple polishing",
+      condition: "Good condition",
+      estimatedCost: 350,
+      finalCost: 350,
+      advance: 350,
+      due: 0,
+      paymentMethod: "UPI",
+      receivedDate: new Date().toISOString().split('T')[0],
+      expectedDelivery: new Date().toISOString().split('T')[0],
+      staffName: "Manoj Sharma",
+      status: "Ready",
+      timeline: [
+        { status: "Received", time: "Today 10:15 AM", user: "Manoj Sharma", note: "Frame deposited for polish" },
+        { status: "Ready", time: "Today 11:30 AM", user: "Optical Tech", note: "Polished and ready" }
+      ]
+    },
+    {
       id: "REP-00101",
       patientId: "P-1003",
       customerName: "Amit Verma",
@@ -620,6 +642,34 @@ const defaultDatabase = {
   ],
 
   invoices: [
+    {
+      id: "BCG-INV-1027",
+      jobId: "BCG-00127",
+      patientId: "P-1004",
+      customerName: "Sunita Devi",
+      customerPhone: "9415234567",
+      customerAddress: "45-B, Govind Nagar, Kanpur",
+      date: new Date().toISOString().split('T')[0],
+      doctorName: "Dr. Alok Bhardwaj",
+      prescriptionRef: "RX-3003",
+      staffName: "Manoj Sharma",
+      items: [
+        { name: "Fastrack Street Urban Square (Tortoise)", qty: 1, rate: 1850, amount: 1850 },
+        { name: "BCG Standard Green Anti-Glare ARC 1.56", qty: 1, rate: 1100, amount: 1100 },
+        { name: "Automated Edging & Lens Fitting Charges", qty: 1, rate: 150, amount: 150 }
+      ],
+      subtotal: 3100,
+      discount: 100,
+      taxableAmount: 3000,
+      cgst: 0,
+      sgst: 0,
+      grandTotal: 3000,
+      advancePaid: 2000,
+      dueAmount: 1000,
+      paymentMethod: "UPI (Google Pay)",
+      paymentStatus: "Partial",
+      expectedDelivery: "Today / Ready"
+    },
     {
       id: "BCG-INV-1025",
       jobId: "BCG-00125",
@@ -1173,6 +1223,93 @@ const BCGStore = {
     db.settings = { ...db.settings, ...newSettings };
     this.saveDB(db);
     return db.settings;
+  },
+
+  // Revenue & Sales Analytics (Current Day, Last Day, Last Week, Total)
+  getRevenueAnalytics: function() {
+    const db = this.getDB();
+    const invoices = db.invoices || [];
+    const repairs = db.repairs || [];
+
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+
+    function isSameDate(dStr, target) {
+      if (!dStr) return false;
+      return dStr.substring(0, 10) === target;
+    }
+
+    function isWithinPast7Days(dStr) {
+      if (!dStr) return false;
+      const sub = dStr.substring(0, 10);
+      return sub >= sevenDaysAgoStr && sub <= todayStr;
+    }
+
+    // Current Day (Today)
+    const todayInvoices = invoices.filter(i => isSameDate(i.date, todayStr));
+    const todayRepairs = repairs.filter(r => isSameDate(r.receivedDate, todayStr));
+    const todayRevenue = todayInvoices.reduce((s, i) => s + (i.grandTotal || 0), 0) +
+                         todayRepairs.reduce((s, r) => s + (r.finalCost || 0), 0);
+    const todayCollected = todayInvoices.reduce((s, i) => s + (i.advancePaid || 0), 0) +
+                           todayRepairs.reduce((s, r) => s + (r.advance || 0), 0);
+
+    // Last Day (Yesterday)
+    const yestInvoices = invoices.filter(i => isSameDate(i.date, yesterdayStr));
+    const yestRepairs = repairs.filter(r => isSameDate(r.receivedDate, yesterdayStr));
+    const yestRevenue = yestInvoices.reduce((s, i) => s + (i.grandTotal || 0), 0) +
+                        yestRepairs.reduce((s, r) => s + (r.finalCost || 0), 0);
+    const yestCollected = yestInvoices.reduce((s, i) => s + (i.advancePaid || 0), 0) +
+                          yestRepairs.reduce((s, r) => s + (r.advance || 0), 0);
+
+    // Last Week (Past 7 Days)
+    const weekInvoices = invoices.filter(i => isWithinPast7Days(i.date));
+    const weekRepairs = repairs.filter(r => isWithinPast7Days(r.receivedDate));
+    const weekRevenue = weekInvoices.reduce((s, i) => s + (i.grandTotal || 0), 0) +
+                        weekRepairs.reduce((s, r) => s + (r.finalCost || 0), 0);
+    const weekCollected = weekInvoices.reduce((s, i) => s + (i.advancePaid || 0), 0) +
+                          weekRepairs.reduce((s, r) => s + (r.advance || 0), 0);
+
+    // Total Lifetime
+    const totalRevenue = invoices.reduce((s, i) => s + (i.grandTotal || 0), 0) +
+                         repairs.reduce((s, r) => s + (r.finalCost || 0), 0);
+    const totalCollected = invoices.reduce((s, i) => s + (i.advancePaid || 0), 0) +
+                           repairs.reduce((s, r) => s + (r.advance || 0), 0);
+    const totalDues = invoices.reduce((s, i) => s + (i.dueAmount || 0), 0) +
+                      repairs.reduce((s, r) => s + (r.due || 0), 0);
+
+    return {
+      today: {
+        revenue: todayRevenue,
+        collected: todayCollected,
+        ordersCount: todayInvoices.length + todayRepairs.length,
+        date: todayStr
+      },
+      yesterday: {
+        revenue: yestRevenue,
+        collected: yestCollected,
+        ordersCount: yestInvoices.length + yestRepairs.length,
+        date: yesterdayStr
+      },
+      lastWeek: {
+        revenue: weekRevenue,
+        collected: weekCollected,
+        ordersCount: weekInvoices.length + weekRepairs.length,
+        range: `${sevenDaysAgoStr} to ${todayStr}`
+      },
+      total: {
+        revenue: totalRevenue,
+        collected: totalCollected,
+        dues: totalDues
+      }
+    };
   }
 };
 
