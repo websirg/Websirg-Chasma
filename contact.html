@@ -21,10 +21,10 @@
 
       <ul class="nav-links">
         <li><a href="index.html" class="nav-link">Home</a></li>
-        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="store.html" class="nav-link"><i class="fa-solid fa-glasses" style="font-size:0.85rem; margin-right:4px;"></i> Optical Store & Glasses</a></li>
         <li><a href="eyecare.html" class="nav-link">Eye Care</a></li>
         <li><a href="procedures.html" class="nav-link">Eye Procedures</a></li>
-        <li><a href="store.html" class="nav-link">Optical Store</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
         <li><a href="contact.html" class="nav-link active">Contact</a></li>
       </ul>
 
@@ -48,12 +48,12 @@
     </div>
   </section>
 
-  <section style="padding:60px 0; background:#ffffff;">
+  <section style="padding:60px 0 30px; background:#ffffff;">
     <div class="container" style="display:grid; grid-template-columns: 1fr 1fr; gap:40px;">
       
       <!-- Contact Information Cards -->
       <div>
-        <div class="card">
+        <div class="card" style="margin-bottom:0;">
           <h3 style="font-size:1.25rem; font-weight:800; margin-bottom:18px;">
             <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> Showroom & OPD Address
           </h3>
@@ -87,20 +87,79 @@
             <a href="store.html" class="btn btn-outline">Explore Eyewear</a>
           </div>
         </div>
+      </div>
 
-        <!-- Google Maps Embed -->
-        <div class="card" style="padding:12px; overflow:hidden;">
-          <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d114324.76774640954!2d80.24523789396344!3d26.46741492582888!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399c47849cb1519b%3A0xb7f0aa9f86ef1083!2sCivil%20Lines%2C%20Kanpur%2C%20Uttar%20Pradesh!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
-            width="100%" 
-            height="260" 
-            style="border:0; border-radius:var(--radius-md);" 
-            allowfullscreen="" 
-            loading="lazy" 
-            referrerpolicy="no-referrer-when-downgrade">
-          </iframe>
+      <!-- Quick Message / Optical Query Form -->
+      <div>
+        <div class="card" style="margin-bottom:0;">
+          <h3 style="font-size:1.25rem; font-weight:800; margin-bottom:8px;">Send Optical or Clinical Inquiry</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:20px;">
+            Have a question regarding progressive lens adaptation, frame availability, or repair quotes? Drop your details below:
+          </p>
+
+          <form onsubmit="event.preventDefault(); BCGUI.toast('Thank you! Your message has been received. Our optical staff will call you shortly.', 'success'); this.reset();">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" class="form-control" required placeholder="e.g. Anand Kumar">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Mobile Number *</label>
+                <input type="tel" class="form-control" required placeholder="10-digit number">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Inquiry Type</label>
+                <select class="form-control">
+                  <option value="lens">Lens / Progressive Options</option>
+                  <option value="frame">Frame Availability</option>
+                  <option value="repair">Chasma Repair Cost</option>
+                  <option value="doctor">Eye Examination Inquiry</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Your Message / Prescription Power Details</label>
+              <textarea class="form-control" rows="3" placeholder="Mention your spectacle power or questions regarding blue-cut coating, titanium frames, etc..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
+              <i class="fa-solid fa-paper-plane"></i> Send Inquiry
+            </button>
+          </form>
         </div>
       </div>
+
+    </div>
+  </section>
+
+  <!-- Large Expanded Google Map Section (Full Width, Height 480px) -->
+  <section style="padding:20px 0 60px; background:#ffffff;">
+    <div class="container">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+        <div>
+          <span class="badge badge-teal"><i class="fa-solid fa-map-location-dot"></i> Interactive Map</span>
+          <h3 style="font-size:1.3rem; font-weight:800; margin-top:4px;">Civil Lines Showroom Navigation</h3>
+        </div>
+        <a href="https://maps.google.com/?q=Civil+Lines+Kanpur" target="_blank" class="btn btn-sm btn-primary">
+          <i class="fa-solid fa-diamond-turn-right"></i> Open in Google Maps App
+        </a>
+      </div>
+
+      <div class="card" style="padding:8px; border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); overflow:hidden; margin-bottom:0;">
+        <iframe 
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d114324.76774640954!2d80.24523789396344!3d26.46741492582888!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399c47849cb1519b%3A0xb7f0aa9f86ef1083!2sCivil%20Lines%2C%20Kanpur%2C%20Uttar%20Pradesh!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
+          width="100%" 
+          height="480" 
+          style="border:0; border-radius:var(--radius-lg); display:block;" 
+          allowfullscreen="" 
+          loading="lazy" 
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+    </div>
+  </section>
 
       <!-- Quick Message / Optical Query Form -->
       <div>

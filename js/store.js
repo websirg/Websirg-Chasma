@@ -371,6 +371,82 @@ const defaultDatabase = {
       description: "Virtually indestructible hinge-less frame with adjustable headband strap for active children.",
       image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=700&q=80",
       featured: false
+    },
+    {
+      id: "FRM-109",
+      brand: "BCG Digital",
+      model: "Blue-Shield Zero-Power Computer Glasses",
+      sku: "BCG-CMP-101",
+      category: "Computer Glasses",
+      frameType: "Full Rim Lightweight TR-90",
+      material: "Anti-Fatigue TR90 & Blue-Filter Lens",
+      color: "Matte Translucent Grey",
+      size: "Universal Fit (51-18-142)",
+      mrp: 1990,
+      price: 1490,
+      stock: 20,
+      lowStockLimit: 4,
+      warranty: "1 Year Store Warranty",
+      description: "Non-prescription digital protection spectacles blocking 98% harmful screen glare and blue-violet radiation.",
+      image: "https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=700&q=80",
+      featured: true
+    },
+    {
+      id: "FRM-110",
+      brand: "Titan Eye+",
+      model: "EZ-Read Foldable Pocket Reading Glasses",
+      sku: "TTN-RD-205",
+      category: "Reading Glasses",
+      frameType: "Rimless Pocket Reader (+1.00 to +3.00)",
+      material: "Memory Metal Flexible Temples",
+      color: "Gunmetal Satin with Hard Case",
+      size: "Compact Pocket Size",
+      mrp: 1290,
+      price: 990,
+      stock: 15,
+      lowStockLimit: 3,
+      warranty: "1 Year Warranty",
+      description: "Ultra-compact reading spectacles with pre-focused optical clarity, ideal for books, newspapers, and mobile phones.",
+      image: "https://images.unsplash.com/photo-1508296695146-257a814070b4?auto=format&fit=crop&w=700&q=80",
+      featured: true
+    },
+    {
+      id: "FRM-111",
+      brand: "Essilor Crizal",
+      model: "Crizal Prevencia 1.56 Blue-Cut UV420 Lens Pair",
+      sku: "ESL-CRZ-156",
+      category: "Optical Lenses",
+      frameType: "Certified Optical Glass Pair",
+      material: "Advanced Optical Resin (Index 1.56)",
+      color: "Subtle Violet Anti-Reflective Tint",
+      size: "Custom Cut to Any Frame",
+      mrp: 2600,
+      price: 2200,
+      stock: 35,
+      lowStockLimit: 5,
+      warranty: "1 Year Coating Warranty",
+      description: "Genuine Essilor Crizal Prevencia optical lenses offering selective blue light filtration, scratch resistance, and dust repellency.",
+      image: "https://images.unsplash.com/photo-1577803645773-f96470509666?auto=format&fit=crop&w=700&q=80",
+      featured: true
+    },
+    {
+      id: "FRM-112",
+      brand: "Carl Zeiss",
+      model: "Zeiss ClearView LotuTec 1.60 Hi-Index Glass Pair",
+      sku: "ZS-LOTU-160",
+      category: "Optical Lenses",
+      frameType: "German Engineered Optical Glass Pair",
+      material: "Thin High-Index Polymer (Index 1.60)",
+      color: "Ultra Clear Anti-Glare Green AR",
+      size: "Custom Cut to Any Frame",
+      mrp: 4200,
+      price: 3600,
+      stock: 22,
+      lowStockLimit: 3,
+      warranty: "2 Years Coating Guarantee",
+      description: "Precision German freeform optical lenses delivering razor-sharp peripheral clarity and super-hydrophobic lotus cleaning.",
+      image: "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?auto=format&fit=crop&w=700&q=80",
+      featured: true
     }
   ],
 
@@ -1044,16 +1120,29 @@ const BCGStore = {
 
     const items = [];
     if (job.frameName && job.framePrice > 0) {
-      items.push({ name: job.frameName, qty: 1, rate: job.framePrice, amount: job.framePrice });
+      items.push({ name: `Frame: ${job.frameName}`, qty: 1, rate: job.framePrice, amount: job.framePrice });
     }
     if (job.lensName && job.lensPrice > 0) {
-      items.push({ name: job.lensName, qty: 1, rate: job.lensPrice, amount: job.lensPrice });
+      items.push({ name: `Lens: ${job.lensName}`, qty: 1, rate: job.lensPrice, amount: job.lensPrice });
+    }
+    if (job.billedMedicines && job.billedMedicines.length > 0) {
+      job.billedMedicines.forEach(m => {
+        if (m.name && m.price > 0) {
+          items.push({
+            name: `Rx Medicine: ${m.name}${m.dose ? ' (' + m.dose + ')' : ''}`,
+            qty: m.qty || 1,
+            rate: m.price,
+            amount: (m.qty || 1) * m.price
+          });
+        }
+      });
     }
     if (job.fittingCharge > 0) {
       items.push({ name: "Lens Precision Fitting & Edging", qty: 1, rate: job.fittingCharge, amount: job.fittingCharge });
     }
 
-    const subtotal = (job.framePrice || 0) + (job.lensPrice || 0) + (job.fittingCharge || 0);
+    const medsSum = (job.billedMedicines || []).reduce((s, m) => s + ((m.qty || 1) * (m.price || 0)), 0);
+    const subtotal = (job.framePrice || 0) + (job.lensPrice || 0) + medsSum + (job.fittingCharge || 0);
     const discount = job.discount || 0;
     const grandTotal = Math.max(0, subtotal - discount);
     const advancePaid = job.advance || 0;

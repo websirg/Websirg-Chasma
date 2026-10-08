@@ -201,13 +201,42 @@ const StaffApp = {
     document.getElementById('edit-lens-price').value = job.lensPrice || 0;
     document.getElementById('edit-fitting-charge').value = job.fittingCharge || 150;
     document.getElementById('edit-discount').value = job.discount || 0;
-    document.getElementById('edit-total').value = job.total || 0;
     document.getElementById('edit-advance').value = job.advance || 0;
     document.getElementById('edit-due').value = job.due || 0;
     document.getElementById('edit-payment-method').value = job.paymentMethod || "UPI (Google Pay / PhonePe)";
     document.getElementById('edit-job-status').value = job.status || "Prescription Received";
     document.getElementById('edit-expected-delivery').value = job.expectedDelivery || "";
     document.getElementById('edit-status-note').value = "";
+
+    // Prescribed Medicines Billing (Loaded from Doctor's Rx)
+    const db = window.BCGStore.getDB();
+    const rx = (db.prescriptions || []).find(r => r.id === job.prescriptionId) || {};
+    const medsTbody = document.getElementById('edit-job-medicines-tbody');
+    if (medsTbody) {
+      let medsList = job.billedMedicines;
+      if (!medsList || medsList.length === 0) {
+        medsList = (rx.medicines || []).map(m => ({
+          name: m.name,
+          dose: `${m.dose || ''} ${m.frequency || ''}`,
+          price: m.name.toLowerCase().includes('drop') ? 180 : 250
+        }));
+      }
+
+      if (medsList.length === 0) {
+        medsTbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:10px;">No medicines prescribed on this Rx. Click "+ Add Item" to bill eye drops.</td></tr>';
+      } else {
+        medsTbody.innerHTML = medsList.map(m => `
+          <tr>
+            <td><input type="text" class="form-control bill-med-name" value="${m.name}"></td>
+            <td><input type="text" class="form-control bill-med-dose" value="${m.dose || ''}"></td>
+            <td><input type="number" class="form-control bill-med-price" value="${m.price || 0}" oninput="StaffApp.recalculateJobBill()"></td>
+            <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove(); StaffApp.recalculateJobBill();">&times;</button></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    this.recalculateJobBill();
 
     // Timeline Rendering
     const timelineContainer = document.getElementById('edit-job-timeline-list');
@@ -220,6 +249,21 @@ const StaffApp = {
     `).reverse().join('');
 
     BCGUI.openModal('modal-job-editor');
+  },
+
+  addInvoiceMedicineRow: function(name = "", dose = "", price = 180) {
+    const tbody = document.getElementById('edit-job-medicines-tbody');
+    if (!tbody) return;
+    if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="form-control bill-med-name" placeholder="Medicine / Eye Drop Name" value="${name}"></td>
+      <td><input type="text" class="form-control bill-med-dose" placeholder="Dose & Frequency" value="${dose}"></td>
+      <td><input type="number" class="form-control bill-med-price" placeholder="Price (₹)" value="${price}" oninput="StaffApp.recalculateJobBill()"></td>
+      <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove(); StaffApp.recalculateJobBill();">&times;</button></td>
+    `;
+    tbody.appendChild(tr);
+    this.recalculateJobBill();
   },
 
   onFrameSelected: function(frameId) {
@@ -247,7 +291,12 @@ const StaffApp = {
     const discount = Number(document.getElementById('edit-discount').value) || 0;
     const advance = Number(document.getElementById('edit-advance').value) || 0;
 
-    const subtotal = framePrice + lensPrice + fitting;
+    let medsTotal = 0;
+    document.querySelectorAll('#edit-job-medicines-tbody .bill-med-price').forEach(inp => {
+      medsTotal += Number(inp.value) || 0;
+    });
+
+    const subtotal = framePrice + lensPrice + medsTotal + fitting;
     const total = Math.max(0, subtotal - discount);
     const due = Math.max(0, total - advance);
 
@@ -278,6 +327,22 @@ const StaffApp = {
     const statusNote = document.getElementById('edit-status-note').value.trim();
     const expectedDelivery = document.getElementById('edit-expected-delivery').value;
 
+    // Collect Billed Prescribed Medicines
+    const billedMedicines = [];
+    document.querySelectorAll('#edit-job-medicines-tbody tr').forEach(tr => {
+      const nameInp = tr.querySelector('.bill-med-name');
+      const doseInp = tr.querySelector('.bill-med-dose');
+      const priceInp = tr.querySelector('.bill-med-price');
+      if (nameInp && priceInp) {
+        const mName = nameInp.value.trim();
+        const mDose = doseInp ? doseInp.value.trim() : '';
+        const mPrice = Number(priceInp.value) || 0;
+        if (mName && mPrice > 0) {
+          billedMedicines.push({ name: mName, dose: mDose, price: mPrice, qty: 1 });
+        }
+      }
+    });
+
     const updatePayload = {
       frameId: frameSelect.value,
       frameName: frameName,
@@ -285,6 +350,7 @@ const StaffApp = {
       lensId: lensSelect.value,
       lensName: lensName,
       lensPrice: lensPrice,
+      billedMedicines: billedMedicines,
       fittingCharge: fittingCharge,
       discount: discount,
       total: total,

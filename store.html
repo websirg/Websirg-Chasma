@@ -23,10 +23,10 @@
 
       <ul class="nav-links">
         <li><a href="index.html" class="nav-link">Home</a></li>
-        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="store.html" class="nav-link active"><i class="fa-solid fa-glasses" style="font-size:0.85rem; margin-right:4px;"></i> Optical Store & Glasses</a></li>
         <li><a href="eyecare.html" class="nav-link">Eye Care</a></li>
         <li><a href="procedures.html" class="nav-link">Eye Procedures</a></li>
-        <li><a href="store.html" class="nav-link active">Optical Store</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
         <li><a href="contact.html" class="nav-link">Contact</a></li>
       </ul>
 
@@ -44,10 +44,10 @@
       <div>
         <span class="badge badge-teal">Certified Optical Dispensary</span>
         <h1 style="font-size:2.2rem; font-weight:800; color:var(--text-main); margin-top:4px;">
-          Optical Eyewear & Frame Catalog
+          Optical Eyewear, Frames & Glasses Catalog
         </h1>
         <p style="color:var(--text-muted); font-size:0.95rem;">
-          Explore premium ophthalmic frames, computer eyeglasses, and prescription sunglasses.
+          Explore designer spectacles, computer blue-cut glasses, reading glasses, and precision ophthalmic lenses.
         </p>
       </div>
       <div>
@@ -66,23 +66,26 @@
       <aside>
         <div class="card" style="position:sticky; top:90px;">
           <h3 style="font-size:1.05rem; font-weight:800; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border-light);">
-            <i class="fa-solid fa-filter"></i> Filter Frames
+            <i class="fa-solid fa-filter"></i> Filter Eyewear & Glass
           </h3>
 
           <!-- Search Filter -->
           <div class="form-group">
             <label class="form-label">Search Keyword</label>
-            <input type="text" id="store-search" class="form-control" placeholder="Brand, Model, Color..." oninput="StoreApp.filterCatalog()">
+            <input type="text" id="store-search" class="form-control" placeholder="Brand, Model, Glass type..." oninput="StoreApp.filterCatalog()">
           </div>
 
           <!-- Category Filter -->
           <div class="form-group">
             <label class="form-label">Category</label>
             <select id="store-category" class="form-control" onchange="StoreApp.filterCatalog()">
-              <option value="All">All Categories</option>
-              <option value="Frames">Prescription Frames</option>
-              <option value="Sunglasses">Polarized Sunglasses</option>
-              <option value="Kids Frames">Kids Flexi-Frames</option>
+              <option value="All">All Categories (सभी प्रकार)</option>
+              <option value="Frames">Prescription Frames (चश्मा फ्रेम)</option>
+              <option value="Computer Glasses">Computer Blue-Cut Glasses (कंप्यूटर चश्मा)</option>
+              <option value="Reading Glasses">Reading Glasses (नजदीक का चश्मा)</option>
+              <option value="Sunglasses">Polarized Sunglasses (धूप का चश्मा)</option>
+              <option value="Kids Frames">Kids Flexi-Frames (बच्चों का चश्मा)</option>
+              <option value="Optical Lenses">Certified Lens / Glass (चश्मे का ग्लास)</option>
             </select>
           </div>
 

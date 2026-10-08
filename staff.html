@@ -303,9 +303,38 @@
           </div>
         </div>
 
+        <!-- Prescribed Medicines Billing (From Doctor's Prescription) -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:0;">
+            <i class="fa-solid fa-pills" style="color:#d97706;"></i> 3. Doctor's Prescribed Medicines & Eye Drops
+          </h4>
+          <button type="button" class="btn btn-sm btn-outline" onclick="StaffApp.addInvoiceMedicineRow()">
+            <i class="fa-solid fa-plus"></i> Add Item
+          </button>
+        </div>
+        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">
+          Staff bills the medicines prescribed by the doctor on this Rx:
+        </p>
+
+        <div class="table-responsive" style="margin-bottom:20px;">
+          <table class="data-table" style="font-size:0.86rem;">
+            <thead>
+              <tr>
+                <th>Medicine / Eye Drop</th>
+                <th>Dosage & Frequency</th>
+                <th style="width:140px;">Price (₹)</th>
+                <th style="width:60px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="edit-job-medicines-tbody">
+              <!-- Dynamically populated from Doctor's Rx via StaffApp.openJobEditor -->
+            </tbody>
+          </table>
+        </div>
+
         <!-- Billing & Advance Calculation -->
         <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; color:var(--text-main);">
-          <i class="fa-solid fa-calculator" style="color:var(--emerald);"></i> 3. Billing & Advance Calculation
+          <i class="fa-solid fa-calculator" style="color:var(--emerald);"></i> 4. Final Billing & Advance Calculation
         </h4>
         <div style="background:var(--bg-subtle); padding:16px; border-radius:var(--radius-md); margin-bottom:20px;">
           <div class="form-row">
