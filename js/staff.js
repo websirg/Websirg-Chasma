@@ -1,30 +1,40 @@
 /**
- * Bhardwaj Chasma Ghar - Optical Staff & Workshop Controller (Phase 1)
+ * Bhardwaj Chasma Ghar - Optical Staff & Sales & Billing Module
+ * Operations: Manoj Sharma (Senior Optometrist & Dispensing Specialist)
+ * Headquarters: Itaily Moad, Maudha Road, Mehnajpur, Azamgarh
  */
 
 const StaffApp = {
   currentEditingJobId: null,
+  currentEditingOrderId: null,
 
   init: function() {
-    const user = window.BCGAuth.requireRole(['staff', 'admin']);
+    const user = window.BCGAuth ? window.BCGAuth.requireRole(['staff', 'admin']) : null;
     if (!user) return;
 
-    if (user) {
-      const staffNameEl = document.getElementById('staff-name');
-      if (staffNameEl) staffNameEl.textContent = user.name;
-    }
+    const staffNameEl = document.getElementById('staff-name');
+    if (staffNameEl && user) staffNameEl.textContent = user.name;
 
     this.renderStats();
+    this.renderOrdersList();
     this.renderJobsList();
+    this.renderInvoicesList();
+    this.renderDuesList();
     this.renderRepairsList();
     this.renderInventoryList();
-    this.renderInvoicesList();
     this.populateFrameDropdown();
     this.populateLensDropdown();
+
+    // Check hash for initial section
+    const hash = window.location.hash.replace('#', '');
+    if (hash && ['orders', 'jobs', 'invoices', 'dues', 'repairs', 'inventory'].includes(hash)) {
+      const navItem = document.querySelector(`.sidebar-item[href="#${hash}"]`);
+      this.showSection(hash, navItem);
+    }
   },
 
   showSection: function(sectionName, navEl) {
-    const sections = ['jobs', 'repairs', 'inventory', 'invoices'];
+    const sections = ['orders', 'jobs', 'invoices', 'dues', 'repairs', 'inventory'];
     sections.forEach(s => {
       const el = document.getElementById(`section-${s}`);
       if (el) el.style.display = (s === sectionName) ? 'block' : 'none';
@@ -37,38 +47,244 @@ const StaffApp = {
 
     const titleEl = document.getElementById('page-title');
     if (titleEl) {
-      if (sectionName === 'jobs') titleEl.textContent = "Optical Dispensing & Chasma Production Orders";
+      if (sectionName === 'orders') titleEl.textContent = "Customer Store Orders & Sales Billing";
+      else if (sectionName === 'jobs') titleEl.textContent = "Optical Dispensing & Chasma Production Jobs";
+      else if (sectionName === 'invoices') titleEl.textContent = "GST Tax Invoices & Payment Receipts";
+      else if (sectionName === 'dues') titleEl.textContent = "Outstanding Balance & Due Payment Collections";
       else if (sectionName === 'repairs') titleEl.textContent = "Chasma Repair & Service Counter";
-      else if (sectionName === 'inventory') titleEl.textContent = "Optical Frame Catalog & Stock Tracking";
-      else if (sectionName === 'invoices') titleEl.textContent = "Customer Tax Invoices & Payments";
+      else if (sectionName === 'inventory') titleEl.textContent = "Frame Stock & Inventory Management";
     }
   },
 
   renderStats: function() {
     const db = window.BCGStore.getDB();
+    const orders = db.orders || [];
     const jobs = db.optical_jobs || [];
+    const invoices = db.invoices || [];
 
-    const newJobs = jobs.filter(j => j.status === 'Prescription Received').length;
-    const labJobs = jobs.filter(j => ['Frame Selected', 'Lens Processing', 'Fitting', 'Quality Check'].includes(j.status)).length;
-    const readyJobs = jobs.filter(j => j.status === 'Ready').length;
-    const totalDues = jobs.reduce((sum, j) => sum + (j.due || 0), 0);
+    const pendingOrders = orders.filter(o => o.status === 'Pending Verification').length;
+    const pendingJobs = jobs.filter(j => !j.invoiceNumber).length;
+    const inProductionJobs = jobs.filter(j => ['Frame Selected', 'Lens Processing', 'Fitting', 'Quality Check'].includes(j.status)).length;
+    const readyCount = jobs.filter(j => j.status === 'Ready').length + orders.filter(o => o.deliveryStatus === 'In Production / Packing').length;
+    
+    const totalDues = invoices.reduce((sum, inv) => sum + (inv.dueAmount || 0), 0) +
+                      (db.repairs || []).reduce((sum, r) => sum + (r.due || 0), 0);
 
-    const elNew = document.getElementById('stat-new-jobs');
-    const elLab = document.getElementById('stat-lab-jobs');
+    const elNewOrders = document.getElementById('stat-new-orders');
+    const elPendingBilling = document.getElementById('stat-pending-billing');
+    const elProduction = document.getElementById('stat-production-jobs');
     const elReady = document.getElementById('stat-ready-jobs');
     const elDues = document.getElementById('stat-pending-dues');
 
-    if (elNew) elNew.textContent = newJobs;
-    if (elLab) elLab.textContent = labJobs;
-    if (elReady) elReady.textContent = readyJobs;
+    if (elNewOrders) elNewOrders.textContent = pendingOrders;
+    if (elPendingBilling) elPendingBilling.textContent = pendingOrders + pendingJobs;
+    if (elProduction) elProduction.textContent = inProductionJobs;
+    if (elReady) elReady.textContent = readyCount;
     if (elDues) elDues.textContent = BCGUI.formatCurrency(totalDues);
   },
 
-  renderJobsList: function() {
+  // ==========================================================================
+  // MODULE 1: CUSTOMER STORE ORDERS (Journey A & Journey B)
+  // ==========================================================================
+  renderOrdersList: function(filterText = '') {
+    const tbody = document.getElementById('orders-table-body');
+    if (!tbody) return;
+
+    let orders = window.BCGStore.getOrders();
+    const cleanFilter = (filterText || '').toLowerCase().trim();
+
+    if (cleanFilter) {
+      orders = orders.filter(o => 
+        o.id.toLowerCase().includes(cleanFilter) ||
+        o.customerName.toLowerCase().includes(cleanFilter) ||
+        o.customerPhone.includes(cleanFilter) ||
+        o.status.toLowerCase().includes(cleanFilter)
+      );
+    }
+
+    if (orders.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">No customer orders found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = orders.map(ord => {
+      const isPending = ord.status === 'Pending Verification' || !ord.invoiceNumber;
+      return `
+        <tr>
+          <td>
+            <strong>${ord.id}</strong><br>
+            <small style="color:var(--text-muted);">${ord.createdAt}</small>
+          </td>
+          <td>
+            <strong>${ord.customerName}</strong><br>
+            <small style="color:var(--text-muted);">${ord.customerPhone}</small>
+          </td>
+          <td>
+            <span class="badge ${ord.orderType === 'Normal' ? 'badge-info' : 'badge-purple'}">
+              ${ord.orderType === 'Normal' ? 'Ready Chasma' : 'Prescription Upload'}
+            </span>
+          </td>
+          <td>
+            ${ord.items.map(it => `<div><strong>${it.brand} ${it.model}</strong> (${it.qty}x)</div>`).join('')}
+          </td>
+          <td>
+            <strong style="color:var(--primary);">${BCGUI.formatCurrency(ord.totalAmount)}</strong>
+          </td>
+          <td>
+            <span class="badge ${isPending ? 'badge-warning' : 'badge-success'}">
+              ${ord.status}
+            </span><br>
+            <small style="color:var(--text-muted); font-size:0.75rem;">${ord.deliveryStatus || 'Placed'}</small>
+          </td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-sm btn-primary" onclick="StaffApp.openOrderEditor('${ord.id}')" title="Verify & Bill">
+                <i class="fa-solid fa-file-invoice-dollar"></i> ${isPending ? 'Verify & Bill' : 'Manage Order'}
+              </button>
+              ${ord.invoiceNumber ? `
+                <button class="btn btn-sm btn-outline" onclick="BCGUI.openInvoiceModal('${ord.invoiceNumber}')" title="Print Invoice">
+                  <i class="fa-solid fa-print"></i>
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  filterOrders: function() {
+    const query = document.getElementById('order-search-input') ? document.getElementById('order-search-input').value : '';
+    this.renderOrdersList(query);
+  },
+
+  openOrderEditor: function(orderId) {
+    this.currentEditingOrderId = orderId;
+    const order = window.BCGStore.getOrderById(orderId);
+    if (!order) return;
+
+    document.getElementById('eord-id-title').textContent = `${order.id} (${order.orderType})`;
+    document.getElementById('eord-customer-info').innerHTML = `
+      <strong>${order.customerName}</strong> (${order.customerPhone})<br>
+      Address: ${order.shippingAddress}<br>
+      ${order.customerEmail ? `Email: ${order.customerEmail} | ` : ''} Delivery: <strong>${order.deliveryStatus || 'Pending'}</strong>
+    `;
+
+    // Render items table
+    const itemsTbody = document.getElementById('eord-items-tbody');
+    itemsTbody.innerHTML = order.items.map(it => `
+      <tr>
+        <td>
+          <strong>${it.brand} ${it.model}</strong><br>
+          <small style="color:var(--text-muted);">SKU: ${it.sku || 'N/A'}</small>
+          ${it.lensName ? `<br><span style="color:var(--primary); font-size:0.8rem;">+ Lens: ${it.lensName}</span>` : ''}
+          ${it.prescriptionDetails ? `<br><span style="color:#b45309; font-size:0.8rem;">Rx: ${it.prescriptionDetails}</span>` : ''}
+        </td>
+        <td style="text-align:center;">${it.qty || 1}</td>
+        <td style="text-align:right;">${BCGUI.formatCurrency(it.price)}</td>
+        <td style="text-align:right;"><strong>${BCGUI.formatCurrency(it.price * (it.qty || 1))}</strong></td>
+      </tr>
+    `).join('');
+
+    document.getElementById('eord-subtotal').value = order.subtotal;
+    document.getElementById('eord-discount').value = order.discount || 0;
+    document.getElementById('eord-total').value = order.totalAmount;
+    document.getElementById('eord-advance').value = order.invoiceNumber ? (order.totalAmount) : (order.totalAmount);
+    document.getElementById('eord-due').value = 0;
+    document.getElementById('eord-payment-method').value = order.paymentMethod || "UPI (Google Pay / PhonePe)";
+    document.getElementById('eord-delivery-status').value = order.deliveryStatus || "In Production / Packing";
+    document.getElementById('eord-notes').value = order.staffNotes || "";
+
+    const btnGenerate = document.getElementById('btn-eord-generate-invoice');
+    if (order.invoiceNumber) {
+      btnGenerate.innerHTML = `<i class="fa-solid fa-print"></i> View / Print Invoice (${order.invoiceNumber})`;
+      btnGenerate.className = "btn btn-outline";
+      btnGenerate.onclick = () => BCGUI.openInvoiceModal(order.invoiceNumber);
+    } else {
+      btnGenerate.innerHTML = `<i class="fa-solid fa-file-invoice"></i> Verify & Generate Official GST Invoice`;
+      btnGenerate.className = "btn btn-primary";
+      btnGenerate.onclick = () => StaffApp.generateOrderInvoice();
+    }
+
+    this.recalculateOrderBill();
+    BCGUI.openModal('modal-order-editor');
+  },
+
+  recalculateOrderBill: function() {
+    const subtotal = Number(document.getElementById('eord-subtotal').value) || 0;
+    const discount = Number(document.getElementById('eord-discount').value) || 0;
+    const advance = Number(document.getElementById('eord-advance').value) || 0;
+
+    const total = Math.max(0, subtotal - discount);
+    const due = Math.max(0, total - advance);
+
+    document.getElementById('eord-total').value = total;
+    document.getElementById('eord-due').value = due;
+  },
+
+  generateOrderInvoice: function() {
+    if (!this.currentEditingOrderId) return;
+    const discount = Number(document.getElementById('eord-discount').value) || 0;
+    const advance = Number(document.getElementById('eord-advance').value) || 0;
+    const paymentMethod = document.getElementById('eord-payment-method').value;
+    const deliveryStatus = document.getElementById('eord-delivery-status').value;
+    const notes = document.getElementById('eord-notes').value.trim();
+
+    const result = window.BCGStore.staffVerifyAndGenerateOrderInvoice(
+      this.currentEditingOrderId,
+      {
+        discount: discount,
+        advance: advance,
+        paymentMethod: paymentMethod,
+        staffNotes: notes,
+        expectedDelivery: "Ready in 2 days"
+      },
+      "Manoj Sharma"
+    );
+
+    if (result && result.invoice) {
+      window.BCGStore.updateOrderStatus(this.currentEditingOrderId, "Confirmed / Billed", deliveryStatus, notes, "Manoj Sharma");
+      BCGUI.toast(`Official Invoice ${result.invoice.id} Generated Successfully!`, "success");
+      BCGUI.closeModal('modal-order-editor');
+      this.renderOrdersList();
+      this.renderInvoicesList();
+      this.renderDuesList();
+      this.renderStats();
+      // Show the freshly generated invoice
+      BCGUI.openInvoiceModal(result.invoice.id);
+    }
+  },
+
+  updateOrderDeliveryOnly: function() {
+    if (!this.currentEditingOrderId) return;
+    const deliveryStatus = document.getElementById('eord-delivery-status').value;
+    const notes = document.getElementById('eord-notes').value.trim();
+
+    window.BCGStore.updateOrderStatus(this.currentEditingOrderId, "Confirmed / Billed", deliveryStatus, notes, "Manoj Sharma");
+    BCGUI.toast("Order status updated successfully", "success");
+    BCGUI.closeModal('modal-order-editor');
+    this.renderOrdersList();
+  },
+
+  // ==========================================================================
+  // MODULE 2: OPTICAL JOBS (Prescription Chasma Production)
+  // ==========================================================================
+  renderJobsList: function(filterText = '') {
     const tbody = document.getElementById('jobs-table-body');
     if (!tbody) return;
 
-    const jobs = window.BCGStore.getOpticalJobs();
+    let jobs = window.BCGStore.getOpticalJobs();
+    const cleanFilter = (filterText || '').toLowerCase().trim();
+
+    if (cleanFilter) {
+      jobs = jobs.filter(j => 
+        j.id.toLowerCase().includes(cleanFilter) ||
+        j.patientName.toLowerCase().includes(cleanFilter) ||
+        j.patientPhone.includes(cleanFilter) ||
+        j.status.toLowerCase().includes(cleanFilter)
+      );
+    }
+
     if (jobs.length === 0) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">No optical jobs currently in queue.</td></tr>';
       return;
@@ -77,9 +293,11 @@ const StaffApp = {
     tbody.innerHTML = jobs.map(job => {
       let statusBadgeClass = 'badge-neutral';
       if (job.status === 'Prescription Received') statusBadgeClass = 'badge-info';
-      else if (['Frame Selected', 'Lens Processing', 'Fitting'].includes(job.status)) statusBadgeClass = 'badge-warning';
+      else if (['Frame Selected', 'Lens Processing', 'Fitting', 'Quality Check'].includes(job.status)) statusBadgeClass = 'badge-warning';
       else if (job.status === 'Ready') statusBadgeClass = 'badge-teal';
       else if (job.status === 'Delivered') statusBadgeClass = 'badge-success';
+
+      const isInvoiceGenerated = !!job.invoiceNumber;
 
       return `
         <tr>
@@ -102,26 +320,26 @@ const StaffApp = {
           </td>
           <td>
             <strong>${BCGUI.formatCurrency(job.total)}</strong><br>
-            <span style="font-size:0.75rem; color:${job.due > 0 ? 'var(--rose)' : 'var(--emerald)'}; font-weight:700;">
-              ${job.due > 0 ? `Due: ${BCGUI.formatCurrency(job.due)}` : 'Fully Paid'}
-            </span>
+            <small style="color:${job.due > 0 ? 'var(--rose)' : 'var(--emerald)'}; font-weight:700;">
+              Due: ${BCGUI.formatCurrency(job.due)}
+            </small>
           </td>
           <td>
-            <span class="badge ${statusBadgeClass}">${job.status}</span>
+            <span class="badge ${statusBadgeClass}">${job.status}</span><br>
+            <small style="color:var(--text-muted); font-size:0.75rem;">
+              ${isInvoiceGenerated ? `<i class="fa-solid fa-check" style="color:var(--emerald);"></i> Billed` : 'Pending Bill'}
+            </small>
           </td>
           <td>
             <div style="display:flex; gap:6px;">
-              <button class="btn btn-sm btn-primary" onclick="StaffApp.openJobEditor('${job.id}')" title="Manage Frame, Lens & Status">
-                <i class="fa-solid fa-pen-to-square"></i> Process
+              <button class="btn btn-sm btn-primary" onclick="StaffApp.openJobEditor('${job.id}')" title="Edit Frame/Lens/Bill">
+                <i class="fa-solid fa-sliders"></i> Edit & Bill
               </button>
-              ${job.invoiceNumber ? `
+              ${isInvoiceGenerated ? `
                 <button class="btn btn-sm btn-outline" onclick="BCGUI.openInvoiceModal('${job.invoiceNumber}')" title="Print Invoice">
                   <i class="fa-solid fa-print"></i>
                 </button>
               ` : ''}
-              <button class="btn btn-sm btn-outline" onclick="BCGUI.openCustomer360('${job.patientId}')" title="Customer 360">
-                <i class="fa-solid fa-circle-user"></i>
-              </button>
             </div>
           </td>
         </tr>
@@ -130,12 +348,8 @@ const StaffApp = {
   },
 
   filterJobs: function() {
-    const q = (document.getElementById('job-search-input').value || '').toLowerCase();
-    const rows = document.querySelectorAll('#jobs-table-body tr');
-    rows.forEach(r => {
-      const text = r.textContent.toLowerCase();
-      r.style.display = text.includes(q) ? '' : 'none';
-    });
+    const query = document.getElementById('job-search-input') ? document.getElementById('job-search-input').value : '';
+    this.renderJobsList(query);
   },
 
   populateFrameDropdown: function() {
@@ -144,7 +358,11 @@ const StaffApp = {
 
     const frames = window.BCGStore.getDB().frames || [];
     select.innerHTML = '<option value="">-- Choose Frame from Stock --</option>' +
-      frames.map(f => `<option value="${f.id}" data-price="${f.price}" data-name="${f.brand} ${f.model}">${f.brand} - ${f.model} (${f.color}) — ₹${f.price} (Stock: ${f.stock})</option>`).join('');
+      frames.map(f => `
+        <option value="${f.id}" data-name="${f.brand} ${f.model}" data-price="${f.price}" data-stock="${f.stock}">
+          ${f.brand} ${f.model} (${f.color}) — ₹${f.price} [Stock: ${f.stock}]
+        </option>
+      `).join('');
   },
 
   populateLensDropdown: function() {
@@ -153,52 +371,40 @@ const StaffApp = {
 
     const lenses = window.BCGStore.getDB().lenses || [];
     select.innerHTML = '<option value="">-- Choose Lens Package --</option>' +
-      lenses.map(l => `<option value="${l.id}" data-price="${l.price}" data-name="${l.brand} ${l.name}">${l.name} (${l.type}) — ₹${l.price}</option>`).join('');
+      lenses.map(l => `
+        <option value="${l.id}" data-name="${l.brand} - ${l.name}" data-price="${l.price}">
+          ${l.brand} ${l.name} (${l.type}) — ₹${l.price}
+        </option>
+      `).join('');
   },
 
   openJobEditor: function(jobId) {
-    const job = window.BCGStore.getOpticalJobById(jobId);
-    if (!job) {
-      BCGUI.toast("Job not found", "error");
-      return;
-    }
-
     this.currentEditingJobId = jobId;
+    const job = window.BCGStore.getOpticalJobById(jobId);
+    if (!job) return;
 
-    // Header & Meta
-    document.getElementById('edit-job-title').textContent = `Optical Job #${job.id}`;
-    document.getElementById('edit-job-badge').textContent = job.status;
-    document.getElementById('edit-job-patient').textContent = job.patientName;
-    document.getElementById('edit-job-phone').textContent = job.patientPhone;
-    document.getElementById('edit-job-rx-ref').textContent = job.prescriptionId;
-    document.getElementById('edit-job-doctor').textContent = job.doctorName || "Dr. Alok Bhardwaj";
-
-    // Rx Table Display (Read-Only)
-    const rxBody = document.getElementById('edit-job-rx-table-body');
-    const rx = job.rxDetails || { right: {}, left: {}, pd: "62" };
-    rxBody.innerHTML = `
-      <tr>
-        <td class="eye-label">Right Eye (OD)</td>
-        <td><strong>${rx.right.sph || '0.00'}</strong></td>
-        <td><strong>${rx.right.cyl || '0.00'}</strong></td>
-        <td><strong>${rx.right.axis || '-'}</strong></td>
-        <td><strong>${rx.right.add || '-'}</strong></td>
-        <td rowspan="2" style="vertical-align:middle; font-weight:800; background:#f8fafc;">${rx.pd || '62'}</td>
-      </tr>
-      <tr>
-        <td class="eye-label">Left Eye (OS)</td>
-        <td><strong>${rx.left.sph || '0.00'}</strong></td>
-        <td><strong>${rx.left.cyl || '0.00'}</strong></td>
-        <td><strong>${rx.left.axis || '-'}</strong></td>
-        <td><strong>${rx.left.add || '-'}</strong></td>
-      </tr>
+    document.getElementById('edit-job-id-title').textContent = job.id;
+    document.getElementById('edit-patient-summary').innerHTML = `
+      <strong>${job.patientName}</strong> (${job.patientPhone}) | Ref: Doctor <strong>${job.doctorName || 'Dr. Satya Prakash Bhardwaj'}</strong>
     `;
 
-    // Populate Fields
-    document.getElementById('edit-frame-select').value = job.frameId || "";
+    // Refraction details
+    const rx = job.rxDetails || { right: {}, left: {} };
+    document.getElementById('edit-job-rx-details').innerHTML = `
+      <div><strong>Right Eye (OD):</strong> SPH: ${rx.right?.sph || '0.00'} | CYL: ${rx.right?.cyl || '0.00'} | AXIS: ${rx.right?.axis || '-'} | ADD: ${rx.right?.add || '-'}</div>
+      <div><strong>Left Eye (OS):</strong> SPH: ${rx.left?.sph || '0.00'} | CYL: ${rx.left?.cyl || '0.00'} | AXIS: ${rx.left?.axis || '-'} | ADD: ${rx.left?.add || '-'}</div>
+      <div style="grid-column:1/-1;"><strong>PD:</strong> ${rx.pd || '62'} mm | <strong>Prescription Ref:</strong> ${job.prescriptionId}</div>
+    `;
+
+    // Frame & Lens selects
+    const frameSelect = document.getElementById('edit-frame-select');
+    if (frameSelect) frameSelect.value = job.frameId || "";
     document.getElementById('edit-frame-price').value = job.framePrice || 0;
-    document.getElementById('edit-lens-select').value = job.lensId || "";
+
+    const lensSelect = document.getElementById('edit-lens-select');
+    if (lensSelect) lensSelect.value = job.lensId || "";
     document.getElementById('edit-lens-price').value = job.lensPrice || 0;
+
     document.getElementById('edit-fitting-charge').value = job.fittingCharge || 150;
     document.getElementById('edit-discount').value = job.discount || 0;
     document.getElementById('edit-advance').value = job.advance || 0;
@@ -210,12 +416,12 @@ const StaffApp = {
 
     // Prescribed Medicines Billing (Loaded from Doctor's Rx)
     const db = window.BCGStore.getDB();
-    const rx = (db.prescriptions || []).find(r => r.id === job.prescriptionId) || {};
+    const docRx = (db.prescriptions || []).find(r => r.id === job.prescriptionId) || {};
     const medsTbody = document.getElementById('edit-job-medicines-tbody');
     if (medsTbody) {
       let medsList = job.billedMedicines;
       if (!medsList || medsList.length === 0) {
-        medsList = (rx.medicines || []).map(m => ({
+        medsList = (docRx.medicines || []).map(m => ({
           name: m.name,
           dose: `${m.dose || ''} ${m.frequency || ''}`,
           price: m.name.toLowerCase().includes('drop') ? 180 : 250
@@ -241,12 +447,12 @@ const StaffApp = {
     // Timeline Rendering
     const timelineContainer = document.getElementById('edit-job-timeline-list');
     const timeline = job.timeline || [];
-    timelineContainer.innerHTML = timeline.map(t => `
-      <div style="background:#f8fafc; padding:6px 10px; border-radius:4px; border-left:3px solid var(--primary);">
-        <strong>${t.status}</strong> — <small style="color:var(--text-muted);">${t.time} by ${t.user}</small>
-        <div style="color:var(--text-main); font-size:0.8rem;">${t.note || ''}</div>
+    timelineContainer.innerHTML = timeline.map(item => `
+      <div style="padding:6px 10px; background:var(--bg-subtle); border-radius:4px; border-left:3px solid var(--primary);">
+        <strong>${item.status}</strong> — <small style="color:var(--text-muted);">${item.time} by ${item.user}</small>
+        ${item.note ? `<p style="margin:2px 0 0; color:var(--text-main); font-size:0.78rem;">${item.note}</p>` : ''}
       </div>
-    `).reverse().join('');
+    `).join('');
 
     BCGUI.openModal('modal-job-editor');
   },
@@ -269,8 +475,8 @@ const StaffApp = {
   onFrameSelected: function(frameId) {
     const select = document.getElementById('edit-frame-select');
     const opt = select.options[select.selectedIndex];
-    if (opt && opt.dataset.price) {
-      document.getElementById('edit-frame-price').value = opt.dataset.price;
+    if (opt && opt.value) {
+      document.getElementById('edit-frame-price').value = opt.getAttribute('data-price') || 0;
     }
     this.recalculateJobBill();
   },
@@ -278,8 +484,8 @@ const StaffApp = {
   onLensSelected: function(lensId) {
     const select = document.getElementById('edit-lens-select');
     const opt = select.options[select.selectedIndex];
-    if (opt && opt.dataset.price) {
-      document.getElementById('edit-lens-price').value = opt.dataset.price;
+    if (opt && opt.value) {
+      document.getElementById('edit-lens-price').value = opt.getAttribute('data-price') || 0;
     }
     this.recalculateJobBill();
   },
@@ -304,16 +510,17 @@ const StaffApp = {
     document.getElementById('edit-due').value = due;
   },
 
-  saveJobModifications: function() {
+  saveJobModifications: function(generateInvoice = false) {
     if (!this.currentEditingJobId) return;
 
     const frameSelect = document.getElementById('edit-frame-select');
-    const frameOpt = frameSelect.options[frameSelect.selectedIndex];
-    const frameName = frameOpt && frameOpt.value ? frameOpt.dataset.name : "Custom Frame";
-
     const lensSelect = document.getElementById('edit-lens-select');
+
+    const frameOpt = frameSelect.options[frameSelect.selectedIndex];
     const lensOpt = lensSelect.options[lensSelect.selectedIndex];
-    const lensName = lensOpt && lensOpt.value ? lensOpt.dataset.name : "Custom Lens Package";
+
+    const frameName = frameOpt ? (frameOpt.getAttribute('data-name') || frameOpt.text) : "";
+    const lensName = lensOpt ? (lensOpt.getAttribute('data-name') || lensOpt.text) : "";
 
     const framePrice = Number(document.getElementById('edit-frame-price').value) || 0;
     const lensPrice = Number(document.getElementById('edit-lens-price').value) || 0;
@@ -327,7 +534,6 @@ const StaffApp = {
     const statusNote = document.getElementById('edit-status-note').value.trim();
     const expectedDelivery = document.getElementById('edit-expected-delivery').value;
 
-    // Collect Billed Prescribed Medicines
     const billedMedicines = [];
     document.querySelectorAll('#edit-job-medicines-tbody tr').forEach(tr => {
       const nameInp = tr.querySelector('.bill-med-name');
@@ -362,106 +568,272 @@ const StaffApp = {
       expectedDelivery: expectedDelivery
     };
 
-    const user = window.BCGAuth.getCurrentUser();
-    const updatedJob = window.BCGStore.updateOpticalJob(this.currentEditingJobId, updatePayload, user ? user.name : "Manoj Sharma");
+    window.BCGStore.updateOpticalJob(this.currentEditingJobId, updatePayload, "Manoj Sharma");
 
-    BCGUI.toast(`Optical Job #${this.currentEditingJobId} updated successfully!`, "success");
+    // Generate/sync invoice
+    const inv = window.BCGStore.staffGenerateJobInvoice(this.currentEditingJobId, {
+      discount: discount,
+      advance: advance,
+      paymentMethod: paymentMethod,
+      expectedDelivery: expectedDelivery
+    }, "Manoj Sharma");
+
+    BCGUI.toast(`Optical Job ${this.currentEditingJobId} & Tax Invoice Updated!`, "success");
     BCGUI.closeModal('modal-job-editor');
-
-    this.renderStats();
     this.renderJobsList();
     this.renderInvoicesList();
+    this.renderDuesList();
+    this.renderStats();
+
+    if (generateInvoice && inv) {
+      BCGUI.openInvoiceModal(inv.id);
+    }
   },
 
-  viewSelectedPatient360: function() {
-    const job = window.BCGStore.getOpticalJobById(this.currentEditingJobId);
-    if (job) BCGUI.openCustomer360(job.patientId);
+  // ==========================================================================
+  // MODULE 3: INVOICES & BILLING LIST
+  // ==========================================================================
+  renderInvoicesList: function() {
+    const tbody = document.getElementById('invoices-table-body');
+    if (!tbody) return;
+
+    const invoices = window.BCGStore.getDB().invoices || [];
+    if (invoices.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">No invoices generated.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = invoices.map(inv => `
+      <tr>
+        <td><strong>${inv.id}</strong></td>
+        <td>${inv.date}</td>
+        <td>
+          <strong>${inv.customerName}</strong><br>
+          <small style="color:var(--text-muted);">${inv.customerPhone}</small>
+        </td>
+        <td>${inv.jobId || inv.orderId || 'Direct Retail'}</td>
+        <td><strong>${BCGUI.formatCurrency(inv.grandTotal)}</strong></td>
+        <td>
+          <span class="badge ${inv.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning'}">
+            ${inv.paymentStatus}
+          </span>
+          ${inv.dueAmount > 0 ? `<br><small style="color:var(--rose);">Due: ${BCGUI.formatCurrency(inv.dueAmount)}</small>` : ''}
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline" onclick="BCGUI.openInvoiceModal('${inv.id}')">
+            <i class="fa-solid fa-print"></i> View / Print
+          </button>
+        </td>
+      </tr>
+    `).join('');
   },
 
-  // REPAIR MANAGEMENT
+  // ==========================================================================
+  // MODULE 4: DUE PAYMENTS & COLLECTION
+  // ==========================================================================
+  renderDuesList: function() {
+    const tbody = document.getElementById('dues-table-body');
+    if (!tbody) return;
+
+    const db = window.BCGStore.getDB();
+    const invoices = (db.invoices || []).filter(i => (i.dueAmount || 0) > 0);
+    const repairs = (db.repairs || []).filter(r => (r.due || 0) > 0);
+
+    const totalDueSum = invoices.reduce((s, i) => s + (i.dueAmount || 0), 0) +
+                        repairs.reduce((s, r) => s + (r.due || 0), 0);
+
+    const dueSumEl = document.getElementById('total-due-collected-sum');
+    if (dueSumEl) dueSumEl.textContent = BCGUI.formatCurrency(totalDueSum);
+
+    if (invoices.length === 0 && repairs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">🎉 No pending dues! All accounts settled.</td></tr>';
+      return;
+    }
+
+    let rowsHtml = '';
+
+    invoices.forEach(inv => {
+      rowsHtml += `
+        <tr>
+          <td><strong>${inv.id}</strong><br><small style="color:var(--text-muted);">${inv.date}</small></td>
+          <td><strong>${inv.customerName}</strong><br><small style="color:var(--text-muted);">${inv.customerPhone}</small></td>
+          <td><span class="badge badge-info">${inv.jobId ? 'Optical Job' : 'Store Order'}</span></td>
+          <td>Total: ${BCGUI.formatCurrency(inv.grandTotal)}<br><small style="color:var(--emerald);">Adv: ${BCGUI.formatCurrency(inv.advancePaid)}</small></td>
+          <td><strong style="color:var(--rose); font-size:1.05rem;">${BCGUI.formatCurrency(inv.dueAmount)}</strong></td>
+          <td>
+            <button class="btn btn-sm btn-success" onclick="StaffApp.settleInvoiceDue('${inv.id}')">
+              <i class="fa-solid fa-hand-holding-dollar"></i> Collect Balance
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    repairs.forEach(rep => {
+      rowsHtml += `
+        <tr>
+          <td><strong>${rep.id}</strong></td>
+          <td><strong>${rep.customerName}</strong><br><small style="color:var(--text-muted);">${rep.customerPhone}</small></td>
+          <td><span class="badge badge-amber">Repair Service</span></td>
+          <td>Cost: ${BCGUI.formatCurrency(rep.finalCost)}</td>
+          <td><strong style="color:var(--rose); font-size:1.05rem;">${BCGUI.formatCurrency(rep.due)}</strong></td>
+          <td>
+            <button class="btn btn-sm btn-success" onclick="StaffApp.settleRepairDue('${rep.id}')">
+              <i class="fa-solid fa-hand-holding-dollar"></i> Collect Balance
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = rowsHtml;
+  },
+
+  settleInvoiceDue: function(invoiceId) {
+    const db = window.BCGStore.getDB();
+    const inv = db.invoices.find(i => i.id === invoiceId);
+    if (!inv) return;
+
+    if (!confirm(`Confirm collection of ${BCGUI.formatCurrency(inv.dueAmount)} from ${inv.customerName}?`)) return;
+
+    inv.advancePaid = inv.grandTotal;
+    inv.dueAmount = 0;
+    inv.paymentStatus = "Paid";
+
+    if (inv.jobId) {
+      const job = db.optical_jobs.find(j => j.id === inv.jobId);
+      if (job) {
+        job.advance = job.total;
+        job.due = 0;
+      }
+    }
+    if (inv.orderId) {
+      const ord = (db.orders || []).find(o => o.id === inv.orderId);
+      if (ord) {
+        ord.paymentStatus = "Paid";
+      }
+    }
+
+    window.BCGStore.saveDB(db);
+    window.BCGStore.logAudit("Manoj Sharma", "staff", "PAYMENT_SETTLED", invoiceId, `Collected full due for invoice ${invoiceId}`);
+    BCGUI.toast(`Payment settled for ${inv.customerName}! Invoice marked Paid.`, "success");
+    this.renderDuesList();
+    this.renderInvoicesList();
+    this.renderStats();
+  },
+
+  settleRepairDue: function(repairId) {
+    const db = window.BCGStore.getDB();
+    const rep = db.repairs.find(r => r.id === repairId);
+    if (!rep) return;
+
+    if (!confirm(`Confirm collection of ${BCGUI.formatCurrency(rep.due)} for repair ticket ${repairId}?`)) return;
+
+    rep.advance = rep.finalCost;
+    rep.due = 0;
+    window.BCGStore.saveDB(db);
+    window.BCGStore.logAudit("Manoj Sharma", "staff", "REPAIR_PAYMENT_SETTLED", repairId, `Collected full due for repair ${repairId}`);
+    BCGUI.toast(`Repair payment settled for ${rep.customerName}!`, "success");
+    this.renderDuesList();
+    this.renderRepairsList();
+    this.renderStats();
+  },
+
+  // ==========================================================================
+  // MODULE 5: FRAME REPAIRS
+  // ==========================================================================
   renderRepairsList: function() {
     const tbody = document.getElementById('repairs-table-body');
     if (!tbody) return;
 
     const repairs = window.BCGStore.getRepairs();
     if (repairs.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">No repair jobs logged.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:var(--text-muted);">No repair tickets.</td></tr>';
       return;
     }
 
-    tbody.innerHTML = repairs.map(rep => {
-      let badge = 'badge-warning';
-      if (rep.status === 'Ready' || rep.status === 'Delivered') badge = 'badge-success';
-
-      return `
-        <tr>
-          <td><strong>${rep.id}</strong></td>
-          <td><strong>${rep.customerName}</strong><br><small style="color:var(--text-muted);">${rep.customerPhone}</small></td>
-          <td>${rep.frameDescription}</td>
-          <td><span style="font-size:0.84rem;">${rep.problem}</span></td>
-          <td>
-            <strong>${BCGUI.formatCurrency(rep.finalCost)}</strong><br>
-            <small style="color:var(--text-muted);">Adv: ${BCGUI.formatCurrency(rep.advance)}</small>
-          </td>
-          <td>
-            <span style="font-weight:700; color:${rep.due > 0 ? 'var(--rose)' : 'var(--emerald)'};">
-              ${BCGUI.formatCurrency(rep.due)}
-            </span>
-          </td>
-          <td>
-            <select class="form-control" style="padding:4px 8px; font-size:0.8rem; width:130px;" onchange="StaffApp.onRepairStatusChange('${rep.id}', this.value)">
-              ${['Received', 'Inspection', 'Estimate', 'Customer Approval', 'Repairing', 'Ready', 'Delivered'].map(s => 
-                `<option value="${s}" ${rep.status === s ? 'selected' : ''}>${s}</option>`
-              ).join('')}
-            </select>
-          </td>
-          <td>
-            <button class="btn btn-sm btn-outline" onclick="BCGUI.openCustomer360('${rep.customerPhone}')" title="Customer 360">
-              <i class="fa-solid fa-user"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join('');
+    tbody.innerHTML = repairs.map(r => `
+      <tr>
+        <td><strong>${r.id}</strong></td>
+        <td>
+          <strong>${r.customerName}</strong><br>
+          <small style="color:var(--text-muted);">${r.customerPhone}</small>
+        </td>
+        <td>
+          <strong>${r.frameDescription}</strong><br>
+          <small style="color:var(--text-muted);">${r.problem}</small>
+        </td>
+        <td>
+          Est: ${BCGUI.formatCurrency(r.estimatedCost)} | Final: <strong>${BCGUI.formatCurrency(r.finalCost)}</strong><br>
+          <small style="color:${r.due > 0 ? 'var(--rose)' : 'var(--emerald)'};">Due: ${BCGUI.formatCurrency(r.due)}</small>
+        </td>
+        <td>
+          <span class="badge ${r.status === 'Ready' ? 'badge-success' : (r.status === 'Delivered' ? 'badge-neutral' : 'badge-warning')}">
+            ${r.status}
+          </span>
+        </td>
+        <td>${r.expectedDelivery || 'Next Day'}</td>
+        <td>
+          <select class="form-control" style="font-size:0.8rem; padding:4px 8px;" onchange="StaffApp.advanceRepairStatus('${r.id}', this.value)">
+            <option value="">Update Status...</option>
+            <option value="Inspection">Inspection</option>
+            <option value="Estimate">Estimate</option>
+            <option value="Customer Approval">Customer Approval</option>
+            <option value="Repairing">Repairing</option>
+            <option value="Quality Check">Quality Check</option>
+            <option value="Ready">Ready for Pickup</option>
+            <option value="Delivered">Delivered</option>
+          </select>
+        </td>
+      </tr>
+    `).join('');
   },
 
-  onRepairStatusChange: function(repairId, newStatus) {
-    const user = window.BCGAuth.getCurrentUser();
-    window.BCGStore.updateRepairStatus(repairId, newStatus, `Staff updated repair status to ${newStatus}`, user ? user.name : "Staff");
-    BCGUI.toast(`Repair ticket #${repairId} marked as ${newStatus}`, "success");
+  advanceRepairStatus: function(repairId, newStatus) {
+    if (!newStatus) return;
+    const note = prompt(`Enter progression note for repair ${repairId} (Optional):`, `Progressed to ${newStatus}`);
+    window.BCGStore.updateRepairStatus(repairId, newStatus, note, "Manoj Sharma");
+    BCGUI.toast(`Repair ${repairId} updated to ${newStatus}`, "success");
     this.renderRepairsList();
+    this.renderDuesList();
+    this.renderStats();
   },
 
   openNewRepairModal: function() {
-    document.getElementById('form-new-repair').reset();
     BCGUI.openModal('modal-new-repair');
   },
 
   submitNewRepair: function() {
-    const name = document.getElementById('rep-name').value.trim();
-    const phone = document.getElementById('rep-phone').value.trim();
-    const frame = document.getElementById('rep-frame').value.trim();
+    const customerName = document.getElementById('rep-cust-name').value.trim();
+    const customerPhone = document.getElementById('rep-cust-phone').value.trim();
+    const frameDesc = document.getElementById('rep-frame-desc').value.trim();
     const problem = document.getElementById('rep-problem').value.trim();
     const cost = Number(document.getElementById('rep-cost').value) || 0;
     const advance = Number(document.getElementById('rep-advance').value) || 0;
+    const expected = document.getElementById('rep-expected').value || "Next Day";
 
-    const user = window.BCGAuth.getCurrentUser();
-    const newRepair = window.BCGStore.addRepair({
-      customerName: name,
-      customerPhone: phone,
-      frameDescription: frame,
-      problem: problem,
+    const repair = window.BCGStore.addRepair({
+      customerName,
+      customerPhone,
+      frameDescription: frameDesc,
+      problem,
       estimatedCost: cost,
       finalCost: cost,
-      advance: advance
-    }, user ? user.name : "Manoj Sharma");
+      advance: advance,
+      expectedDelivery: expected
+    }, "Manoj Sharma");
 
-    BCGUI.toast(`Repair ticket #${newRepair.id} registered successfully!`, "success");
+    BCGUI.toast(`Repair ticket ${repair.id} created!`, "success");
     BCGUI.closeModal('modal-new-repair');
+    document.getElementById('form-new-repair').reset();
     this.renderRepairsList();
+    this.renderDuesList();
+    this.renderStats();
   },
 
-  // INVENTORY LIST
+  // ==========================================================================
+  // MODULE 6: FRAME INVENTORY
+  // ==========================================================================
   renderInventoryList: function() {
     const tbody = document.getElementById('inventory-table-body');
     if (!tbody) return;
@@ -469,43 +841,34 @@ const StaffApp = {
     const frames = window.BCGStore.getDB().frames || [];
     tbody.innerHTML = frames.map(f => `
       <tr>
-        <td><strong>${f.brand}</strong><br><small style="color:var(--text-muted);">${f.sku}</small></td>
-        <td><strong>${f.model}</strong><br><small style="color:var(--text-muted);">${f.color}</small></td>
-        <td>${f.frameType}<br><small style="color:var(--text-muted);">${f.material}</small></td>
-        <td><strong>${BCGUI.formatCurrency(f.price)}</strong> <s style="color:var(--text-muted); font-size:0.75rem;">${BCGUI.formatCurrency(f.mrp)}</s></td>
-        <td><strong style="color:${f.stock <= (f.lowStockLimit || 2) ? 'var(--rose)' : 'inherit'};">${f.stock} Units</strong></td>
         <td>
-          <span class="badge ${f.stock <= 2 ? 'badge-danger' : 'badge-success'}">
-            ${f.stock <= 2 ? 'Low Stock' : 'In Stock'}
-          </span>
+          <img src="${f.image}" style="width:48px; height:40px; object-fit:cover; border-radius:4px;">
+        </td>
+        <td>
+          <strong>${f.brand} ${f.model}</strong><br>
+          <small style="color:var(--text-muted);">${f.sku}</small>
+        </td>
+        <td>${f.category}</td>
+        <td>${BCGUI.formatCurrency(f.price)} <s style="font-size:0.75rem; color:var(--text-muted);">${BCGUI.formatCurrency(f.mrp)}</s></td>
+        <td>
+          <strong style="color:${f.stock <= 3 ? 'var(--rose)' : 'inherit'};">${f.stock} Units</strong>
+          ${f.stock <= 3 ? '<span class="badge badge-danger" style="margin-left:4px;">Low Stock</span>' : ''}
+        </td>
+        <td>
+          <div style="display:inline-flex; align-items:center; gap:4px;">
+            <button class="btn btn-sm btn-outline" onclick="StaffApp.adjustStock('${f.id}', -1)">-1</button>
+            <button class="btn btn-sm btn-outline" onclick="StaffApp.adjustStock('${f.id}', 1)">+1</button>
+          </div>
         </td>
       </tr>
     `).join('');
   },
 
-  // INVOICES LIST
-  renderInvoicesList: function() {
-    const tbody = document.getElementById('invoices-table-body');
-    if (!tbody) return;
-
-    const invoices = window.BCGStore.getDB().invoices || [];
-    tbody.innerHTML = invoices.map(inv => `
-      <tr>
-        <td><strong>${inv.id}</strong></td>
-        <td>${inv.date}</td>
-        <td><strong>${inv.customerName}</strong><br><small style="color:var(--text-muted);">${inv.customerPhone}</small></td>
-        <td>${inv.jobId || 'N/A'}</td>
-        <td><strong>${BCGUI.formatCurrency(inv.grandTotal)}</strong></td>
-        <td>${BCGUI.formatCurrency(inv.advancePaid)}</td>
-        <td><strong style="color:${inv.dueAmount > 0 ? 'var(--rose)' : 'var(--emerald)'};">${BCGUI.formatCurrency(inv.dueAmount)}</strong></td>
-        <td><span class="badge ${inv.paymentStatus === 'Paid' ? 'badge-success' : 'badge-warning'}">${inv.paymentStatus}</span></td>
-        <td>
-          <button class="btn btn-sm btn-outline" onclick="BCGUI.openInvoiceModal('${inv.id}')">
-            <i class="fa-solid fa-eye"></i> View / Print
-          </button>
-        </td>
-      </tr>
-    `).join('');
+  adjustStock: function(frameId, change) {
+    window.BCGStore.updateFrameStock(frameId, change);
+    BCGUI.toast(`Stock updated for frame`, "info");
+    this.renderInventoryList();
+    this.populateFrameDropdown();
   }
 };
 

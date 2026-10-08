@@ -1,26 +1,36 @@
 /**
  * Bhardwaj Chasma Ghar - Complete Eye Care & Optical Management System
- * Core Relational LocalStore Data Layer (Phase 1)
+ * Core Relational LocalStore Data Layer (Phase 2 Production)
+ * Business Address: Itaily Moad, Maudha Road, Mehnajpur, Azamgarh
+ * Consultant Doctor: Dr. Satya Prakash Bhardwaj
  */
 
-const BCG_STORAGE_KEY = 'bcg_optical_system_v1';
+const BCG_STORAGE_KEY = 'bcg_optical_system_v2';
+const BCG_CART_KEY = 'bcg_optical_cart_v2';
 
 const defaultDatabase = {
   settings: {
     name: "Bhardwaj Chasma Ghar",
     tagline: "Complete Eye Care & Optical Solutions",
-    owner: "Dr. Alok Bhardwaj & Rajeev Bhardwaj",
-    address: "Shop No. 12-14, Medical Complex, Main Market, Civil Lines, Kanpur, Uttar Pradesh - 208001",
+    doctorName: "Dr. Satya Prakash Bhardwaj",
+    owner: "Dr. Satya Prakash Bhardwaj & Rajeev Bhardwaj",
+    address: "Itaily Moad, Maudha Road, Mehnajpur, Azamgarh",
     phone: "+91 98390 12345, +91 94150 67890",
     email: "care@bhardwajchasma.com",
     website: "https://bhardwajchasma.com",
     gstin: "09AAEFB1234K1ZV",
+    mapEmbedUrl: "https://maps.google.com/maps?q=Mehnajpur,+Azamgarh,+Uttar+Pradesh&t=&z=15&ie=UTF8&iwloc=&output=embed",
+    mapDirectionsUrl: "https://maps.google.com/?q=Mehnajpur+Azamgarh+Uttar+Pradesh",
+    allowPrescriptionUpload: true,
     invoicePrefix: "BCG-INV",
-    jobPrefix: "BCG-",
+    jobPrefix: "BCG-OPT-",
+    orderPrefix: "BCG-ORD-",
     repairPrefix: "REP-",
     taxRate: 12, // 12% GST standard optical frames/lenses
     fittingCharge: 150,
-    currency: "₹"
+    currency: "₹",
+    businessHours: "Monday to Sunday: 9:30 AM – 8:30 PM",
+    opdHours: "Mon - Sat: 10:00 AM – 2:00 PM & 4:30 PM – 7:30 PM"
   },
 
   users: [
@@ -35,9 +45,8 @@ const defaultDatabase = {
     },
     {
       id: "USR-002",
-      name: "Dr. Alok Bhardwaj",
-      designation: "Senior Consultant Ophthalmologist & Eye Surgeon (MBBS, MS)",
-      regNo: "UP-MC-45920",
+      name: "Dr. Satya Prakash Bhardwaj",
+      designation: "Consultant Eye Specialist & Vision Care",
       email: "doctor@bhardwajchasma.com",
       phone: "9415067890",
       password: "doctor",
@@ -55,7 +64,7 @@ const defaultDatabase = {
       permissions: [
         "view_patients", "add_patients", "view_prescriptions",
         "create_optical_jobs", "manage_frames", "manage_lenses",
-        "create_invoice", "receive_payment", "manage_repairs"
+        "manage_orders", "create_invoice", "receive_payment", "manage_repairs"
       ],
       avatar: "assets/avatar-staff.png"
     },
@@ -90,7 +99,7 @@ const defaultDatabase = {
       age: 29,
       gender: "Male",
       dob: "1997-04-12",
-      address: "14/82, Swaroop Nagar, Kanpur - 208002",
+      address: "Itaily Moad, Mehnajpur, Azamgarh - 276204",
       emergencyContact: "9876543219 (Brother)",
       occupation: "Software Engineer",
       medicalHistory: "Astigmatism, Screen fatigue (8+ hrs digital work), No diabetes/HTN",
@@ -105,10 +114,10 @@ const defaultDatabase = {
       age: 35,
       gender: "Female",
       dob: "1991-08-20",
-      address: "Plot 42, Kakadeo Double Puliya, Kanpur - 208025",
+      address: "Maudha Road, Mehnajpur, Azamgarh - 276204",
       emergencyContact: "9812345670 (Spouse)",
-      occupation: "College Professor",
-      medicalHistory: "Early presbyopic reading difficulty, headaches after evening reading",
+      occupation: "Teacher",
+      medicalHistory: "Early presbyopic reading difficulty, occasional headaches",
       allergies: "Ciprofloxacin allergy",
       createdAt: "2026-09-20"
     },
@@ -120,9 +129,9 @@ const defaultDatabase = {
       age: 48,
       gender: "Male",
       dob: "1978-11-05",
-      address: "M-Block, Kidwai Nagar, Kanpur - 208011",
+      address: "Main Market, Mehnajpur, Azamgarh",
       emergencyContact: "9839123450 (Wife)",
-      occupation: "Chartered Accountant",
+      occupation: "Trader",
       medicalHistory: "Moderate Myopia with Presbyopia, controlled hypertension",
       allergies: "None",
       createdAt: "2026-09-28"
@@ -135,10 +144,10 @@ const defaultDatabase = {
       age: 58,
       gender: "Female",
       dob: "1968-02-14",
-      address: "45-B, Govind Nagar, Kanpur - 208006",
+      address: "Ward 4, Mehnajpur, Azamgarh",
       emergencyContact: "9415234560 (Son)",
       occupation: "Homemaker",
-      medicalHistory: "Bilateral Pseudophakia (Cataract Phaco post-op 2024), needing reading & computer add",
+      medicalHistory: "Bilateral Pseudophakia, needing reading & computer glasses",
       allergies: "Sulfa drugs",
       createdAt: "2026-10-01"
     }
@@ -148,7 +157,7 @@ const defaultDatabase = {
     {
       id: "EX-2001",
       patientId: "P-1001",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       date: "2026-10-06",
       rightEye: { sph: "-2.50", cyl: "-0.50", axis: "90", add: "" },
       leftEye: { sph: "-2.00", cyl: "-0.25", axis: "85", add: "" },
@@ -157,14 +166,14 @@ const defaultDatabase = {
       nearPd: "60",
       visualAcuity: { right: "6/6 with Rx", left: "6/6 with Rx" },
       eyePressure: "14 mmHg (Normal both eyes)",
-      observations: "Mild tear film break-up (computer vision syndrome). Cornea clear. Fundus within normal limits. Retinal vessels normal.",
-      recommendations: "Recommend Blue-Cut Anti-Reflective 1.56/1.61 lenses with 20-20-20 screen habit. Artificial tear lubrication.",
+      observations: "Mild tear film break-up (computer vision strain). Cornea clear. Fundus within normal limits.",
+      recommendations: "Recommend Blue-Cut Anti-Reflective 1.56/1.61 lenses with 20-20-20 screen habit.",
       notes: "Annual checkup advised."
     },
     {
       id: "EX-2002",
       patientId: "P-1002",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       date: "2026-10-07",
       rightEye: { sph: "+0.50", cyl: "-0.50", axis: "180", add: "+1.25" },
       leftEye: { sph: "+0.25", cyl: "-0.25", axis: "175", add: "+1.25" },
@@ -173,7 +182,7 @@ const defaultDatabase = {
       nearPd: "58",
       visualAcuity: { right: "6/6, N6", left: "6/6, N6" },
       eyePressure: "15 mmHg",
-      observations: "Incipient presbyopia. Clear media. Optic disc pink with healthy cup-disc ratio 0.3.",
+      observations: "Incipient presbyopia. Clear media. Healthy optic disc.",
       recommendations: "Progressive / Digital Anti-Fatigue lenses for seamless distance to reading transition.",
       notes: "Demonstrated progressive lens corridor to patient."
     }
@@ -184,7 +193,7 @@ const defaultDatabase = {
       id: "RX-3001",
       patientId: "P-1001",
       examId: "EX-2001",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       date: "2026-10-06",
       rightEye: { sph: "-2.50", cyl: "-0.50", axis: "90", add: "" },
       leftEye: { sph: "-2.00", cyl: "-0.25", axis: "85", add: "" },
@@ -196,25 +205,25 @@ const defaultDatabase = {
         { name: "Cap. NutriEye-Gold (Lutein + Astaxanthin)", dose: "1 Cap", frequency: "0-1-0 (Once daily after lunch)", duration: "30 Days", instructions: "Swallow with water" }
       ],
       opticalStatus: "Sent to Optical",
-      opticalJobId: "BCG-00125",
+      opticalJobId: "BCG-OPT-00125",
       createdAt: "2026-10-06T11:45:00"
     },
     {
       id: "RX-3002",
       patientId: "P-1002",
       examId: "EX-2002",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       date: "2026-10-07",
       rightEye: { sph: "+0.50", cyl: "-0.50", axis: "180", add: "+1.25" },
       leftEye: { sph: "+0.25", cyl: "-0.25", axis: "175", add: "+1.25" },
       pd: "61",
-      lensRecommendation: "Freeform Digital Progressive with Blue-Shield & Super-Hydrophobic Coating",
+      lensRecommendation: "Freeform Digital Progressive with Blue-Shield Coating",
       notes: "Initial adaptation period of 3-5 days. Avoid quick head movements on stairs.",
       medicines: [
         { name: "Refresh Tears Preservative-Free", dose: "1 drop", frequency: "As needed (SOS)", duration: "1 Month", instructions: "For eye strain relief" }
       ],
       opticalStatus: "Sent to Optical",
-      opticalJobId: "BCG-00126",
+      opticalJobId: "BCG-OPT-00126",
       createdAt: "2026-10-07T12:10:00"
     }
   ],
@@ -514,7 +523,7 @@ const defaultDatabase = {
     { id: "CAT-3", name: "Reading Glasses", count: 12 },
     { id: "CAT-4", name: "Kids Frames", count: 10 },
     { id: "CAT-5", name: "Lens Products", count: 15 },
-    { id: "CAT-6", name: "Accessories", count: 30 }
+    { id: "CAT-6", name: "Computer Glasses", count: 8 }
   ],
 
   brands: [
@@ -528,15 +537,92 @@ const defaultDatabase = {
     { id: "BRD-8", name: "Scott Eyewear", origin: "USA", status: "Active" }
   ],
 
+  // JOURNEY A & B: Commercial Customer Orders (Created at Checkout, Verified & Billed by Staff)
+  orders: [
+    {
+      id: "BCG-ORD-5001",
+      customerId: "USR-004",
+      patientId: "P-1001",
+      customerName: "Rahul Sharma",
+      customerPhone: "9876543210",
+      customerEmail: "rahul.sharma@gmail.com",
+      shippingAddress: "Itaily Moad, Mehnajpur, Azamgarh - 276204",
+      orderType: "Normal", // Ready-made computer glasses
+      items: [
+        {
+          id: "FRM-109",
+          brand: "BCG Digital",
+          model: "Blue-Shield Zero-Power Computer Glasses",
+          sku: "BCG-CMP-101",
+          price: 1490,
+          mrp: 1990,
+          qty: 1,
+          image: "https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=700&q=80"
+        }
+      ],
+      subtotal: 1490,
+      discount: 100,
+      shippingCharges: 0,
+      totalAmount: 1390,
+      status: "Confirmed / Billed",
+      invoiceNumber: "BCG-INV-5001",
+      paymentStatus: "Paid",
+      paymentMethod: "UPI (Google Pay)",
+      createdAt: "2026-10-07 14:30",
+      staffNotes: "Order verified by Manoj Sharma. Ready product packed.",
+      deliveryStatus: "Dispatched",
+      expectedDelivery: "2026-10-09"
+    },
+    {
+      id: "BCG-ORD-5002",
+      customerId: "USR-005",
+      patientId: "P-1002",
+      customerName: "Priya Patel",
+      customerPhone: "9812345678",
+      customerEmail: "priya.patel@gmail.com",
+      shippingAddress: "Maudha Road, Mehnajpur, Azamgarh",
+      orderType: "PrescriptionUpload", // Journey B: customer provided prescription
+      items: [
+        {
+          id: "FRM-101",
+          brand: "Titan Eye+",
+          model: "TF-2026 Matte Black",
+          sku: "TTN-TF2026-BLK",
+          price: 2490,
+          mrp: 2990,
+          qty: 1,
+          lensId: "LNS-201",
+          lensName: "Essilor Crizal Prevencia 1.56 Blue-Cut UV420",
+          lensPrice: 2200,
+          hasPrescription: true,
+          prescriptionDetails: "OD: -1.50/-0.25x90, OS: -1.25 SPH, PD: 63mm (Uploaded Dr. Rx Slip)",
+          image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=700&q=80"
+        }
+      ],
+      subtotal: 4690,
+      discount: 190,
+      shippingCharges: 0,
+      totalAmount: 4500,
+      status: "Pending Verification", // Staff needs to verify and generate final invoice!
+      invoiceNumber: null, // Invoice is NOT generated yet!
+      paymentStatus: "Unpaid",
+      createdAt: "2026-10-08 09:45",
+      staffNotes: "New online prescription order received. Awaiting staff verification and billing.",
+      deliveryStatus: "Order Placed",
+      expectedDelivery: "3-5 Working Days"
+    }
+  ],
+
+  // JOURNEY C: Prescription-Based Glasses Production Pipeline
   optical_jobs: [
     {
-      id: "BCG-00125",
+      id: "BCG-OPT-00125",
       patientId: "P-1001",
       patientName: "Rahul Sharma",
       patientPhone: "9876543210",
       prescriptionId: "RX-3001",
       doctorId: "USR-002",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       rxDetails: {
         right: { sph: "-2.50", cyl: "-0.50", axis: "90", add: "" },
         left: { sph: "-2.00", cyl: "-0.25", axis: "85", add: "" },
@@ -560,19 +646,19 @@ const defaultDatabase = {
       expectedDelivery: "2026-10-10",
       status: "Lens Processing",
       timeline: [
-        { status: "Prescription Received", time: "06 Oct 2026, 11:45 AM", user: "Dr. Alok Bhardwaj", note: "Sent from OPD Room 1" },
+        { status: "Prescription Received", time: "06 Oct 2026, 11:45 AM", user: "Dr. Satya Prakash Bhardwaj", note: "Prescription dispatched to Optical Dispensing team." },
         { status: "Frame Selected", time: "06 Oct 2026, 12:15 PM", user: "Manoj Sharma", note: "Frame Titan TF-2026 paired with Crizal Prevencia" },
         { status: "Lens Processing", time: "07 Oct 2026, 02:40 PM", user: "Optical Lab", note: "Automated edging and precision axis alignment 90/85" }
       ]
     },
     {
-      id: "BCG-00126",
+      id: "BCG-OPT-00126",
       patientId: "P-1002",
       patientName: "Priya Patel",
       patientPhone: "9812345678",
       prescriptionId: "RX-3002",
       doctorId: "USR-002",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       rxDetails: {
         right: { sph: "+0.50", cyl: "-0.50", axis: "180", add: "+1.25" },
         left: { sph: "+0.25", cyl: "-0.25", axis: "175", add: "+1.25" },
@@ -590,24 +676,24 @@ const defaultDatabase = {
       total: 9200,
       advance: 5000,
       due: 4200,
-      paymentMethod: "Credit Card (HDFC)",
+      paymentMethod: "Credit Card",
       invoiceNumber: "BCG-INV-1026",
       createdAt: "2026-10-07 12:20",
       expectedDelivery: "2026-10-11",
       status: "Frame Selected",
       timeline: [
-        { status: "Prescription Received", time: "07 Oct 2026, 12:10 PM", user: "Dr. Alok Bhardwaj", note: "Sent to optical department" },
+        { status: "Prescription Received", time: "07 Oct 2026, 12:10 PM", user: "Dr. Satya Prakash Bhardwaj", note: "Progressive Rx sent to Optical" },
         { status: "Frame Selected", time: "07 Oct 2026, 01:05 PM", user: "Manoj Sharma", note: "Vogue Cat-Eye frame matched with digital progressive corridor" }
       ]
     },
     {
-      id: "BCG-00124",
+      id: "BCG-OPT-00124",
       patientId: "P-1003",
       patientName: "Amit Verma",
       patientPhone: "9839123456",
       prescriptionId: "RX-2998",
       doctorId: "USR-002",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       rxDetails: {
         right: { sph: "-3.75", cyl: "-1.00", axis: "100", add: "+1.75" },
         left: { sph: "-3.50", cyl: "-0.75", axis: "80", add: "+1.75" },
@@ -631,7 +717,7 @@ const defaultDatabase = {
       expectedDelivery: "2026-10-06",
       status: "Delivered",
       timeline: [
-        { status: "Prescription Received", time: "03 Oct 2026, 10:15 AM", user: "Dr. Alok Bhardwaj", note: "Routine prescription" },
+        { status: "Prescription Received", time: "03 Oct 2026, 10:15 AM", user: "Dr. Satya Prakash Bhardwaj", note: "Routine prescription" },
         { status: "Frame Selected", time: "03 Oct 2026, 11:00 AM", user: "Manoj Sharma", note: "Titanium Supra frame ordered" },
         { status: "Lens Processing", time: "04 Oct 2026, 03:00 PM", user: "Optical Lab", note: "Surfacing completed" },
         { status: "Fitting", time: "05 Oct 2026, 11:30 AM", user: "Optical Lab", note: "Nylon supra cord fitted" },
@@ -717,44 +803,45 @@ const defaultDatabase = {
     }
   ],
 
+  // OFFICIAL GST TAX INVOICES (Generated EXCLUSIVELY by Staff)
   invoices: [
     {
-      id: "BCG-INV-1027",
-      jobId: "BCG-00127",
-      patientId: "P-1004",
-      customerName: "Sunita Devi",
-      customerPhone: "9415234567",
-      customerAddress: "45-B, Govind Nagar, Kanpur",
-      date: new Date().toISOString().split('T')[0],
-      doctorName: "Dr. Alok Bhardwaj",
-      prescriptionRef: "RX-3003",
-      staffName: "Manoj Sharma",
-      items: [
-        { name: "Fastrack Street Urban Square (Tortoise)", qty: 1, rate: 1850, amount: 1850 },
-        { name: "BCG Standard Green Anti-Glare ARC 1.56", qty: 1, rate: 1100, amount: 1100 },
-        { name: "Automated Edging & Lens Fitting Charges", qty: 1, rate: 150, amount: 150 }
-      ],
-      subtotal: 3100,
-      discount: 100,
-      taxableAmount: 3000,
-      cgst: 0,
-      sgst: 0,
-      grandTotal: 3000,
-      advancePaid: 2000,
-      dueAmount: 1000,
-      paymentMethod: "UPI (Google Pay)",
-      paymentStatus: "Partial",
-      expectedDelivery: "Today / Ready"
-    },
-    {
-      id: "BCG-INV-1025",
-      jobId: "BCG-00125",
+      id: "BCG-INV-5001",
+      orderId: "BCG-ORD-5001",
+      jobId: null,
       patientId: "P-1001",
       customerName: "Rahul Sharma",
       customerPhone: "9876543210",
-      customerAddress: "14/82, Swaroop Nagar, Kanpur",
+      customerAddress: "Itaily Moad, Mehnajpur, Azamgarh",
+      date: "2026-10-07",
+      doctorName: "Direct Optical Counter",
+      prescriptionRef: "Normal Retail Sale",
+      staffName: "Manoj Sharma",
+      items: [
+        { name: "BCG Digital Blue-Shield Computer Glasses (Universal Fit)", qty: 1, rate: 1490, amount: 1490 }
+      ],
+      subtotal: 1490,
+      discount: 100,
+      taxableAmount: 1390,
+      cgst: 0,
+      sgst: 0,
+      grandTotal: 1390,
+      advancePaid: 1390,
+      dueAmount: 0,
+      paymentMethod: "UPI (Google Pay)",
+      paymentStatus: "Paid",
+      expectedDelivery: "2026-10-09"
+    },
+    {
+      id: "BCG-INV-1025",
+      orderId: null,
+      jobId: "BCG-OPT-00125",
+      patientId: "P-1001",
+      customerName: "Rahul Sharma",
+      customerPhone: "9876543210",
+      customerAddress: "Itaily Moad, Mehnajpur, Azamgarh",
       date: "2026-10-06",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       prescriptionRef: "RX-3001",
       staffName: "Manoj Sharma",
       items: [
@@ -776,13 +863,14 @@ const defaultDatabase = {
     },
     {
       id: "BCG-INV-1026",
-      jobId: "BCG-00126",
+      orderId: null,
+      jobId: "BCG-OPT-00126",
       patientId: "P-1002",
       customerName: "Priya Patel",
       customerPhone: "9812345678",
-      customerAddress: "Plot 42, Kakadeo Double Puliya, Kanpur",
+      customerAddress: "Maudha Road, Mehnajpur, Azamgarh",
       date: "2026-10-07",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       prescriptionRef: "RX-3002",
       staffName: "Manoj Sharma",
       items: [
@@ -804,13 +892,14 @@ const defaultDatabase = {
     },
     {
       id: "BCG-INV-1024",
-      jobId: "BCG-00124",
+      orderId: null,
+      jobId: "BCG-OPT-00124",
       patientId: "P-1003",
       customerName: "Amit Verma",
       customerPhone: "9839123456",
-      customerAddress: "M-Block, Kidwai Nagar, Kanpur",
+      customerAddress: "Main Market, Mehnajpur, Azamgarh",
       date: "2026-10-03",
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: "Dr. Satya Prakash Bhardwaj",
       prescriptionRef: "RX-2998",
       staffName: "Manoj Sharma",
       items: [
@@ -836,11 +925,11 @@ const defaultDatabase = {
     {
       id: "LOG-501",
       timestamp: "06/10/2026 11:45:12",
-      user: "Dr. Alok Bhardwaj",
+      user: "Dr. Satya Prakash Bhardwaj",
       role: "doctor",
       action: "PRESCRIPTION_SENT_TO_OPTICAL",
       targetId: "RX-3001",
-      details: "Created Rx for Rahul Sharma (SPH R:-2.50, L:-2.00) & triggered Optical Job BCG-00125"
+      details: "Created Rx for Rahul Sharma (SPH R:-2.50, L:-2.00) & triggered Optical Job BCG-OPT-00125"
     },
     {
       id: "LOG-502",
@@ -848,7 +937,7 @@ const defaultDatabase = {
       user: "Manoj Sharma",
       role: "staff",
       action: "OPTICAL_JOB_UPDATED",
-      targetId: "BCG-00125",
+      targetId: "BCG-OPT-00125",
       details: "Selected Titan TF-2026 Frame & Essilor Prevencia Lens. Advance ₹2,000 recorded."
     },
     {
@@ -858,34 +947,43 @@ const defaultDatabase = {
       role: "staff",
       action: "INVOICE_GENERATED",
       targetId: "BCG-INV-1025",
-      details: "Generated invoice for BCG-00125 total ₹4,700, advance ₹2,000, due ₹2,700"
+      details: "Staff verified and generated GST Tax Invoice for BCG-OPT-00125 (Total: ₹4,700, Adv: ₹2,000)"
     },
     {
       id: "LOG-504",
-      timestamp: "07/10/2026 12:10:45",
-      user: "Dr. Alok Bhardwaj",
-      role: "doctor",
-      action: "PRESCRIPTION_SENT_TO_OPTICAL",
-      targetId: "RX-3002",
-      details: "Created progressive Rx for Priya Patel & triggered Optical Job BCG-00126"
+      timestamp: "07/10/2026 14:35:10",
+      user: "Manoj Sharma",
+      role: "staff",
+      action: "ORDER_INVOICE_GENERATED",
+      targetId: "BCG-INV-5001",
+      details: "Staff verified Customer Order BCG-ORD-5001 and generated Tax Invoice BCG-INV-5001"
     }
   ]
 };
 
-// BCG Database API
+// ============================================================================
+// BCG CORE STORE API (Centralized State & Relational Store)
+// ============================================================================
 const BCGStore = {
   getDB: function() {
     try {
       const data = localStorage.getItem(BCG_STORAGE_KEY);
       if (!data) {
-        this.resetDB();
-        return JSON.parse(localStorage.getItem(BCG_STORAGE_KEY));
+        return this.resetDB();
       }
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      // Ensure required collections exist even if migrating from older versions
+      if (!parsed.orders) parsed.orders = defaultDatabase.orders;
+      if (!parsed.settings || parsed.settings.address.includes('Kanpur') || !parsed.settings.doctorName) {
+        parsed.settings = { ...defaultDatabase.settings, ...(parsed.settings || {}) };
+        parsed.settings.address = defaultDatabase.settings.address;
+        parsed.settings.doctorName = defaultDatabase.settings.doctorName;
+        this.saveDB(parsed);
+      }
+      return parsed;
     } catch (e) {
-      console.error("Error reading localStorage, resetting to default:", e);
-      this.resetDB();
-      return defaultDatabase;
+      console.error("Error reading BCGStore, resetting to default:", e);
+      return this.resetDB();
     }
   },
 
@@ -901,16 +999,16 @@ const BCGStore = {
 
   resetDB: function() {
     localStorage.setItem(BCG_STORAGE_KEY, JSON.stringify(defaultDatabase));
-    return defaultDatabase;
+    return JSON.parse(JSON.stringify(defaultDatabase));
   },
 
-  // Log an audit trail
+  // Audit Logging
   logAudit: function(user, role, action, targetId, details) {
     const db = this.getDB();
     const now = new Date();
     const timeStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const logItem = {
-      id: "LOG-" + (db.audit_logs.length + 501),
+      id: "LOG-" + ((db.audit_logs ? db.audit_logs.length : 0) + 501),
       timestamp: timeStr,
       user: user || "System",
       role: role || "system",
@@ -918,11 +1016,25 @@ const BCGStore = {
       targetId: targetId,
       details: details
     };
+    if (!db.audit_logs) db.audit_logs = [];
     db.audit_logs.unshift(logItem);
     this.saveDB(db);
   },
 
-  // Patients
+  // Settings
+  getSettings: function() {
+    return this.getDB().settings || defaultDatabase.settings;
+  },
+
+  updateSettings: function(newSettings) {
+    const db = this.getDB();
+    db.settings = { ...db.settings, ...newSettings };
+    this.saveDB(db);
+    this.logAudit("Admin", "admin", "SETTINGS_UPDATED", "SYSTEM_CONFIG", "Updated business settings");
+    return db.settings;
+  },
+
+  // Patients Management
   getPatients: function() {
     return this.getDB().patients || [];
   },
@@ -934,16 +1046,21 @@ const BCGStore = {
 
   addPatient: function(patientData) {
     const db = this.getDB();
+    // Check if phone already registered
+    const existing = db.patients.find(p => p.phone === patientData.phone);
+    if (existing) {
+      return existing;
+    }
     const newId = "P-" + (db.patients.length + 1001);
     const newPatient = {
       id: newId,
       name: patientData.name,
       phone: patientData.phone,
       email: patientData.email || "",
-      age: patientData.age || 0,
+      age: Number(patientData.age) || 0,
       gender: patientData.gender || "Not specified",
       dob: patientData.dob || "",
-      address: patientData.address || "",
+      address: patientData.address || "Mehnajpur, Azamgarh",
       emergencyContact: patientData.emergencyContact || "",
       occupation: patientData.occupation || "",
       medicalHistory: patientData.medicalHistory || "None reported",
@@ -952,18 +1069,19 @@ const BCGStore = {
     };
     db.patients.unshift(newPatient);
     this.saveDB(db);
-    this.logAudit("Doctor/Staff", "staff", "PATIENT_REGISTERED", newId, `Registered patient ${newPatient.name} (${newPatient.phone})`);
+    this.logAudit("Staff/Doctor", "staff", "PATIENT_REGISTERED", newId, `Registered patient ${newPatient.name} (${newPatient.phone})`);
     return newPatient;
   },
 
-  // Eye Examinations
+  // Eye Examinations (Doctor Only)
   addExamination: function(examData) {
     const db = this.getDB();
+    const settings = this.getSettings();
     const newId = "EX-" + (db.examinations.length + 2001);
     const newExam = {
       id: newId,
       patientId: examData.patientId,
-      doctorName: examData.doctorName || "Dr. Alok Bhardwaj",
+      doctorName: examData.doctorName || settings.doctorName,
       date: new Date().toISOString().split('T')[0],
       rightEye: examData.rightEye,
       leftEye: examData.leftEye,
@@ -978,12 +1096,14 @@ const BCGStore = {
     };
     db.examinations.unshift(newExam);
     this.saveDB(db);
+    this.logAudit(newExam.doctorName, "doctor", "EXAMINATION_RECORDED", newId, `Clinical exam recorded for patient ${examData.patientId}`);
     return newExam;
   },
 
-  // Prescriptions
+  // Prescriptions (Doctor Only)
   addPrescription: function(rxData, sendToOptical = false) {
     const db = this.getDB();
+    const settings = this.getSettings();
     const newRxId = "RX-" + (db.prescriptions.length + 3001);
     const patient = this.getPatientById(rxData.patientId);
     
@@ -992,10 +1112,9 @@ const BCGStore = {
 
     if (sendToOptical) {
       const nextJobNum = db.optical_jobs.length + 127;
-      opticalJobId = "BCG-00" + nextJobNum;
+      opticalJobId = "BCG-OPT-00" + nextJobNum;
       opticalStatus = "Sent to Optical";
 
-      // Create Optical Job automatically
       const newJob = {
         id: opticalJobId,
         patientId: rxData.patientId,
@@ -1003,7 +1122,7 @@ const BCGStore = {
         patientPhone: patient ? patient.phone : rxData.patientPhone,
         prescriptionId: newRxId,
         doctorId: rxData.doctorId || "USR-002",
-        doctorName: rxData.doctorName || "Dr. Alok Bhardwaj",
+        doctorName: rxData.doctorName || settings.doctorName,
         rxDetails: {
           right: rxData.rightEye,
           left: rxData.leftEye,
@@ -1022,7 +1141,7 @@ const BCGStore = {
         advance: 0,
         due: 0,
         paymentMethod: "",
-        invoiceNumber: "",
+        invoiceNumber: null, // NOT generated yet! Staff must generate!
         createdAt: new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         expectedDelivery: "",
         status: "Prescription Received",
@@ -1030,7 +1149,7 @@ const BCGStore = {
           {
             status: "Prescription Received",
             time: new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            user: rxData.doctorName || "Dr. Alok Bhardwaj",
+            user: rxData.doctorName || settings.doctorName,
             note: "Prescription electronically dispatched to Optical Dispensing team."
           }
         ]
@@ -1042,7 +1161,7 @@ const BCGStore = {
       id: newRxId,
       patientId: rxData.patientId,
       examId: rxData.examId || "",
-      doctorName: rxData.doctorName || "Dr. Alok Bhardwaj",
+      doctorName: rxData.doctorName || settings.doctorName,
       date: new Date().toISOString().split('T')[0],
       rightEye: rxData.rightEye,
       leftEye: rxData.leftEye,
@@ -1060,7 +1179,7 @@ const BCGStore = {
 
     const logAction = sendToOptical ? "PRESCRIPTION_SENT_TO_OPTICAL" : "PRESCRIPTION_SAVED";
     this.logAudit(
-      rxData.doctorName || "Doctor",
+      rxData.doctorName || settings.doctorName,
       "doctor",
       logAction,
       newRxId,
@@ -1070,7 +1189,7 @@ const BCGStore = {
     return { prescription: newPrescription, opticalJobId: opticalJobId };
   },
 
-  // Optical Jobs
+  // Optical Jobs (Prescription Chasma Production)
   getOpticalJobs: function() {
     return this.getDB().optical_jobs || [];
   },
@@ -1087,43 +1206,42 @@ const BCGStore = {
     const currentJob = db.optical_jobs[jobIndex];
     const prevStatus = currentJob.status;
 
-    // Merge updates
     const updatedJob = { ...currentJob, ...updateData };
 
-    // If status changed, push to timeline
     if (updateData.status && updateData.status !== prevStatus) {
       if (!updatedJob.timeline) updatedJob.timeline = [];
       updatedJob.timeline.push({
         status: updateData.status,
         time: new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         user: staffUser,
-        note: updateData.statusNote || `Status updated to ${updateData.status}`
+        note: updateData.statusNote || `Production stage advanced to ${updateData.status}`
       });
     }
 
     db.optical_jobs[jobIndex] = updatedJob;
-
-    // Check if an invoice should be auto-created or updated
-    if (updateData.advance !== undefined || updateData.total !== undefined) {
-      this.syncInvoiceForJob(db, updatedJob, staffUser);
-    }
-
     this.saveDB(db);
     this.logAudit(staffUser, "staff", "OPTICAL_JOB_UPDATED", jobId, `Job ${jobId} updated: Status=${updatedJob.status}, Total=₹${updatedJob.total}`);
     return updatedJob;
   },
 
-  syncInvoiceForJob: function(db, job, staffUser) {
-    let invoice = db.invoices.find(inv => inv.jobId === job.id);
+  // STAFF ONLY: Generate Official Invoice for an Optical Job
+  staffGenerateJobInvoice: function(jobId, billingData, staffUser = "Manoj Sharma") {
+    const db = this.getDB();
+    const jobIndex = db.optical_jobs.findIndex(j => j.id === jobId);
+    if (jobIndex === -1) return null;
+
+    const job = db.optical_jobs[jobIndex];
     const patient = db.patients.find(p => p.id === job.patientId) || {};
-    const invoiceNum = invoice ? invoice.id : `BCG-INV-${job.id.replace('BCG-', '')}`;
+    const settings = this.getSettings();
+
+    const invoiceNum = job.invoiceNumber || `BCG-INV-${job.id.replace('BCG-OPT-', '').replace('BCG-', '')}`;
 
     const items = [];
     if (job.frameName && job.framePrice > 0) {
-      items.push({ name: `Frame: ${job.frameName}`, qty: 1, rate: job.framePrice, amount: job.framePrice });
+      items.push({ name: `Optical Frame: ${job.frameName}`, qty: 1, rate: job.framePrice, amount: job.framePrice });
     }
     if (job.lensName && job.lensPrice > 0) {
-      items.push({ name: `Lens: ${job.lensName}`, qty: 1, rate: job.lensPrice, amount: job.lensPrice });
+      items.push({ name: `Ophthalmic Lenses: ${job.lensName}`, qty: 1, rate: job.lensPrice, amount: job.lensPrice });
     }
     if (job.billedMedicines && job.billedMedicines.length > 0) {
       job.billedMedicines.forEach(m => {
@@ -1138,29 +1256,30 @@ const BCGStore = {
       });
     }
     if (job.fittingCharge > 0) {
-      items.push({ name: "Lens Precision Fitting & Edging", qty: 1, rate: job.fittingCharge, amount: job.fittingCharge });
+      items.push({ name: "Automated CNC Lens Edging & Mounting", qty: 1, rate: job.fittingCharge, amount: job.fittingCharge });
     }
 
     const medsSum = (job.billedMedicines || []).reduce((s, m) => s + ((m.qty || 1) * (m.price || 0)), 0);
     const subtotal = (job.framePrice || 0) + (job.lensPrice || 0) + medsSum + (job.fittingCharge || 0);
-    const discount = job.discount || 0;
+    const discount = billingData.discount !== undefined ? Number(billingData.discount) : (job.discount || 0);
     const grandTotal = Math.max(0, subtotal - discount);
-    const advancePaid = job.advance || 0;
+    const advancePaid = billingData.advance !== undefined ? Number(billingData.advance) : (job.advance || 0);
     const dueAmount = Math.max(0, grandTotal - advancePaid);
     const paymentStatus = dueAmount === 0 ? "Paid" : (advancePaid > 0 ? "Partial" : "Unpaid");
 
     const invoiceData = {
       id: invoiceNum,
       jobId: job.id,
+      orderId: null,
       patientId: job.patientId,
       customerName: job.patientName,
       customerPhone: job.patientPhone,
-      customerAddress: patient.address || "Kanpur, UP",
+      customerAddress: patient.address || settings.address,
       date: new Date().toISOString().split('T')[0],
-      doctorName: job.doctorName,
+      doctorName: job.doctorName || settings.doctorName,
       prescriptionRef: job.prescriptionId,
       staffName: staffUser,
-      items: items.length > 0 ? items : [{ name: "Optical Dispensing Service", qty: 1, rate: grandTotal, amount: grandTotal }],
+      items: items.length > 0 ? items : [{ name: "Prescription Chasma Complete Assembly", qty: 1, rate: grandTotal, amount: grandTotal }],
       subtotal: subtotal,
       discount: discount,
       taxableAmount: grandTotal,
@@ -1169,17 +1288,210 @@ const BCGStore = {
       grandTotal: grandTotal,
       advancePaid: advancePaid,
       dueAmount: dueAmount,
-      paymentMethod: job.paymentMethod || "Cash/UPI",
+      paymentMethod: billingData.paymentMethod || job.paymentMethod || "Cash/UPI",
       paymentStatus: paymentStatus,
-      expectedDelivery: job.expectedDelivery || "3-5 Working Days"
+      expectedDelivery: billingData.expectedDelivery || job.expectedDelivery || "3-5 Working Days"
     };
 
-    if (invoice) {
-      const idx = db.invoices.findIndex(inv => inv.id === invoice.id);
-      db.invoices[idx] = invoiceData;
+    let invIdx = db.invoices.findIndex(inv => inv.id === invoiceNum || inv.jobId === job.id);
+    if (invIdx !== -1) {
+      db.invoices[invIdx] = invoiceData;
     } else {
       db.invoices.unshift(invoiceData);
-      job.invoiceNumber = invoiceNum;
+    }
+
+    job.invoiceNumber = invoiceNum;
+    job.total = grandTotal;
+    job.advance = advancePaid;
+    job.due = dueAmount;
+    job.discount = discount;
+    if (billingData.paymentMethod) job.paymentMethod = billingData.paymentMethod;
+    if (billingData.expectedDelivery) job.expectedDelivery = billingData.expectedDelivery;
+
+    // Decrement stock if frame allocated
+    if (job.frameId) {
+      this.decrementStock(db, job.frameId, 1);
+    }
+
+    db.optical_jobs[jobIndex] = job;
+    this.saveDB(db);
+
+    this.logAudit(staffUser, "staff", "JOB_INVOICE_GENERATED", invoiceNum, `Staff generated Tax Invoice for Optical Job ${job.id}`);
+    return invoiceData;
+  },
+
+  // ==========================================================================
+  // CUSTOMER ORDERS (Journey A - Ready-Made & Journey B - Uploaded Rx)
+  // ==========================================================================
+  getOrders: function() {
+    return this.getDB().orders || [];
+  },
+
+  getOrderById: function(orderId) {
+    return this.getOrders().find(o => o.id === orderId);
+  },
+
+  // Customer places order request (Invoice is NOT generated yet!)
+  createCustomerOrder: function(orderPayload) {
+    const db = this.getDB();
+    const nextNum = (db.orders ? db.orders.length : 0) + 5003;
+    const orderId = "BCG-ORD-" + nextNum;
+
+    const subtotal = orderPayload.items.reduce((s, it) => s + (it.price * (it.qty || 1)), 0);
+    const discount = orderPayload.discount || 0;
+    const shipping = 0;
+    const totalAmount = Math.max(0, subtotal - discount + shipping);
+
+    const newOrder = {
+      id: orderId,
+      customerId: orderPayload.customerId || "GUEST",
+      patientId: orderPayload.patientId || null,
+      customerName: orderPayload.customerName,
+      customerPhone: orderPayload.customerPhone,
+      customerEmail: orderPayload.customerEmail || "",
+      shippingAddress: orderPayload.shippingAddress || "Mehnajpur, Azamgarh",
+      orderType: orderPayload.orderType || "Normal", // "Normal" or "PrescriptionUpload"
+      items: orderPayload.items || [],
+      subtotal: subtotal,
+      discount: discount,
+      shippingCharges: shipping,
+      totalAmount: totalAmount,
+      status: "Pending Verification", // Verification required by Staff before invoicing!
+      invoiceNumber: null, // ONLY Staff will generate invoice!
+      paymentStatus: "Unpaid",
+      paymentMethod: orderPayload.paymentMethod || "Pay at Counter / UPI on Delivery",
+      createdAt: new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      staffNotes: orderPayload.notes || "New customer order placed online. Pending staff verification.",
+      deliveryStatus: "Order Placed",
+      expectedDelivery: "2-4 Working Days"
+    };
+
+    if (!db.orders) db.orders = [];
+    db.orders.unshift(newOrder);
+
+    // Also link or register patient if not already registered
+    if (orderPayload.customerPhone) {
+      const existing = db.patients.find(p => p.phone === orderPayload.customerPhone);
+      if (!existing) {
+        this.addPatient({
+          name: orderPayload.customerName,
+          phone: orderPayload.customerPhone,
+          email: orderPayload.customerEmail,
+          address: orderPayload.shippingAddress
+        });
+      }
+    }
+
+    this.saveDB(db);
+    this.logAudit(
+      orderPayload.customerName,
+      "customer",
+      "CUSTOMER_ORDER_PLACED",
+      orderId,
+      `Placed order ${orderId} (${newOrder.orderType}) for ₹${totalAmount}. Pending Staff Invoicing.`
+    );
+
+    return newOrder;
+  },
+
+  // STAFF ONLY: Verify Customer Order & Generate Final Invoice
+  staffVerifyAndGenerateOrderInvoice: function(orderId, billingAdjustments = {}, staffUser = "Manoj Sharma") {
+    const db = this.getDB();
+    const orderIndex = db.orders.findIndex(o => o.id === orderId);
+    if (orderIndex === -1) return null;
+
+    const order = db.orders[orderIndex];
+    const settings = this.getSettings();
+
+    const invoiceNum = `BCG-INV-${order.id.replace('BCG-ORD-', 'ORD')}`;
+
+    const items = order.items.map(it => ({
+      name: `${it.brand} ${it.model}${it.lensName ? ' + ' + it.lensName : ''}`,
+      qty: it.qty || 1,
+      rate: it.price,
+      amount: (it.qty || 1) * it.price
+    }));
+
+    const discount = billingAdjustments.discount !== undefined ? Number(billingAdjustments.discount) : (order.discount || 0);
+    const grandTotal = Math.max(0, order.subtotal - discount);
+    const advancePaid = billingAdjustments.advance !== undefined ? Number(billingAdjustments.advance) : grandTotal;
+    const dueAmount = Math.max(0, grandTotal - advancePaid);
+    const paymentStatus = dueAmount === 0 ? "Paid" : (advancePaid > 0 ? "Partial" : "Unpaid");
+
+    const invoiceData = {
+      id: invoiceNum,
+      orderId: order.id,
+      jobId: null,
+      patientId: order.patientId,
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      customerAddress: order.shippingAddress || settings.address,
+      date: new Date().toISOString().split('T')[0],
+      doctorName: order.orderType === 'PrescriptionUpload' ? 'Uploaded Rx Verified' : 'Direct Optical Counter',
+      prescriptionRef: order.orderType === 'PrescriptionUpload' ? 'Customer Prescription Upload' : 'Retail Optical Order',
+      staffName: staffUser,
+      items: items,
+      subtotal: order.subtotal,
+      discount: discount,
+      taxableAmount: grandTotal,
+      cgst: 0,
+      sgst: 0,
+      grandTotal: grandTotal,
+      advancePaid: advancePaid,
+      dueAmount: dueAmount,
+      paymentMethod: billingAdjustments.paymentMethod || order.paymentMethod || "UPI / Cash",
+      paymentStatus: paymentStatus,
+      expectedDelivery: billingAdjustments.expectedDelivery || order.expectedDelivery || "Ready in 2 days"
+    };
+
+    // Save invoice
+    let invIdx = db.invoices.findIndex(inv => inv.id === invoiceNum);
+    if (invIdx !== -1) {
+      db.invoices[invIdx] = invoiceData;
+    } else {
+      db.invoices.unshift(invoiceData);
+    }
+
+    // Update order status
+    order.status = "Confirmed / Billed";
+    order.invoiceNumber = invoiceNum;
+    order.totalAmount = grandTotal;
+    order.paymentStatus = paymentStatus;
+    order.deliveryStatus = "In Production / Packing";
+    order.staffNotes = billingAdjustments.staffNotes || `Verified and billed by ${staffUser}.`;
+
+    // Decrement stock for all items
+    order.items.forEach(it => {
+      this.decrementStock(db, it.id, it.qty || 1);
+    });
+
+    db.orders[orderIndex] = order;
+    this.saveDB(db);
+
+    this.logAudit(staffUser, "staff", "ORDER_INVOICE_GENERATED", invoiceNum, `Staff verified order ${order.id} and generated Tax Invoice ${invoiceNum}`);
+    return { order, invoice: invoiceData };
+  },
+
+  updateOrderStatus: function(orderId, newStatus, deliveryStatus = "", notes = "", staffUser = "Manoj Sharma") {
+    const db = this.getDB();
+    const order = db.orders.find(o => o.id === orderId);
+    if (!order) return null;
+
+    order.status = newStatus;
+    if (deliveryStatus) order.deliveryStatus = deliveryStatus;
+    if (notes) order.staffNotes = notes;
+
+    this.saveDB(db);
+    this.logAudit(staffUser, "staff", "ORDER_STATUS_CHANGED", orderId, `Order ${orderId} changed to ${newStatus} (${deliveryStatus})`);
+    return order;
+  },
+
+  // Stock helper
+  decrementStock: function(db, frameId, qty = 1) {
+    if (!frameId) return;
+    const frame = (db.frames || []).find(f => f.id === frameId);
+    if (frame) {
+      frame.stock = Math.max(0, frame.stock - qty);
     }
   },
 
@@ -1194,7 +1506,7 @@ const BCGStore = {
 
   addRepair: function(repairData, staffUser = "Manoj Sharma") {
     const db = this.getDB();
-    const newId = "REP-" + (db.repairs.length + 103);
+    const newId = "REP-" + (db.repairs.length + 104);
     const newRepair = {
       id: newId,
       patientId: repairData.patientId || "",
@@ -1254,18 +1566,39 @@ const BCGStore = {
     return repair;
   },
 
-  // Customer 360 Full Aggregation
+  // Customer 360 Full Lifetime Profile Aggregator
   getCustomer360: function(identifier) {
     const db = this.getDB();
-    // identifier can be patientId, phone, or email
-    const patient = db.patients.find(p => p.id === identifier || p.phone === identifier || p.email === identifier);
+    let patient = db.patients.find(p => p.id === identifier || p.phone === identifier || p.email === identifier);
+    
+    // If not in OPD patients yet, check orders, invoices, or repairs
+    if (!patient) {
+      const matchOrder = (db.orders || []).find(o => o.id === identifier || o.customerPhone === identifier);
+      const matchInv = (db.invoices || []).find(i => i.id === identifier || i.customerPhone === identifier);
+      const matchRep = (db.repairs || []).find(r => r.id === identifier || r.customerPhone === identifier);
+      const sample = matchOrder || matchInv || matchRep;
+      if (sample) {
+        patient = {
+          id: sample.patientId || `C-${sample.customerPhone || 'GUEST'}`,
+          name: sample.customerName || 'Store Customer',
+          phone: sample.customerPhone || identifier,
+          email: sample.customerEmail || '',
+          address: sample.shippingAddress || sample.customerAddress || 'Local Customer',
+          age: sample.customerAge || 'N/A',
+          gender: 'N/A',
+          registeredDate: new Date().toISOString().split('T')[0]
+        };
+      }
+    }
+
     if (!patient) return null;
 
-    const exams = db.examinations.filter(e => e.patientId === patient.id);
-    const prescriptions = db.prescriptions.filter(rx => rx.patientId === patient.id);
-    const opticalJobs = db.optical_jobs.filter(j => j.patientId === patient.id);
-    const repairs = db.repairs.filter(r => r.patientId === patient.id || r.customerPhone === patient.phone);
-    const invoices = db.invoices.filter(i => i.patientId === patient.id || i.customerPhone === patient.phone);
+    const exams = (db.examinations || []).filter(e => e.patientId === patient.id);
+    const prescriptions = (db.prescriptions || []).filter(rx => rx.patientId === patient.id || rx.patientPhone === patient.phone);
+    const opticalJobs = (db.optical_jobs || []).filter(j => j.patientId === patient.id || j.patientPhone === patient.phone);
+    const orders = (db.orders || []).filter(o => o.patientId === patient.id || o.customerPhone === patient.phone);
+    const repairs = (db.repairs || []).filter(r => r.patientId === patient.id || r.customerPhone === patient.phone);
+    const invoices = (db.invoices || []).filter(i => i.patientId === patient.id || i.customerPhone === patient.phone);
 
     const totalSpent = invoices.reduce((sum, inv) => sum + (inv.grandTotal || 0), 0) +
                        repairs.reduce((sum, rep) => sum + (rep.finalCost || 0), 0);
@@ -1277,10 +1610,12 @@ const BCGStore = {
       latestExam: exams[0] || null,
       latestRx: prescriptions[0] || null,
       activeJob: opticalJobs.find(j => j.status !== 'Delivered') || opticalJobs[0] || null,
+      activeOrder: orders.find(o => o.status !== 'Delivered') || orders[0] || null,
       activeRepair: repairs.find(r => r.status !== 'Delivered') || repairs[0] || null,
       exams,
       prescriptions,
       opticalJobs,
+      orders,
       repairs,
       invoices,
       totalSpent,
@@ -1288,33 +1623,7 @@ const BCGStore = {
     };
   },
 
-  // Inventory Management
-  updateFrameStock: function(frameId, changeAmount) {
-    const db = this.getDB();
-    const frame = db.frames.find(f => f.id === frameId);
-    if (frame) {
-      frame.stock = Math.max(0, frame.stock + changeAmount);
-      this.saveDB(db);
-    }
-  },
-
-  addFrame: function(frameData) {
-    const db = this.getDB();
-    const newId = "FRM-" + (db.frames.length + 109);
-    const newFrame = { id: newId, ...frameData };
-    db.frames.unshift(newFrame);
-    this.saveDB(db);
-    return newFrame;
-  },
-
-  updateSettings: function(newSettings) {
-    const db = this.getDB();
-    db.settings = { ...db.settings, ...newSettings };
-    this.saveDB(db);
-    return db.settings;
-  },
-
-  // Revenue & Sales Analytics (Current Day, Last Day, Last Week, Total)
+  // Revenue & Sales Analytics
   getRevenueAnalytics: function() {
     const db = this.getDB();
     const invoices = db.invoices || [];
@@ -1342,7 +1651,6 @@ const BCGStore = {
       return sub >= sevenDaysAgoStr && sub <= todayStr;
     }
 
-    // Current Day (Today)
     const todayInvoices = invoices.filter(i => isSameDate(i.date, todayStr));
     const todayRepairs = repairs.filter(r => isSameDate(r.receivedDate, todayStr));
     const todayRevenue = todayInvoices.reduce((s, i) => s + (i.grandTotal || 0), 0) +
@@ -1350,7 +1658,6 @@ const BCGStore = {
     const todayCollected = todayInvoices.reduce((s, i) => s + (i.advancePaid || 0), 0) +
                            todayRepairs.reduce((s, r) => s + (r.advance || 0), 0);
 
-    // Last Day (Yesterday)
     const yestInvoices = invoices.filter(i => isSameDate(i.date, yesterdayStr));
     const yestRepairs = repairs.filter(r => isSameDate(r.receivedDate, yesterdayStr));
     const yestRevenue = yestInvoices.reduce((s, i) => s + (i.grandTotal || 0), 0) +
@@ -1358,7 +1665,6 @@ const BCGStore = {
     const yestCollected = yestInvoices.reduce((s, i) => s + (i.advancePaid || 0), 0) +
                           yestRepairs.reduce((s, r) => s + (r.advance || 0), 0);
 
-    // Last Week (Past 7 Days)
     const weekInvoices = invoices.filter(i => isWithinPast7Days(i.date));
     const weekRepairs = repairs.filter(r => isWithinPast7Days(r.receivedDate));
     const weekRevenue = weekInvoices.reduce((s, i) => s + (i.grandTotal || 0), 0) +
@@ -1366,7 +1672,6 @@ const BCGStore = {
     const weekCollected = weekInvoices.reduce((s, i) => s + (i.advancePaid || 0), 0) +
                           weekRepairs.reduce((s, r) => s + (r.advance || 0), 0);
 
-    // Total Lifetime
     const totalRevenue = invoices.reduce((s, i) => s + (i.grandTotal || 0), 0) +
                          repairs.reduce((s, r) => s + (r.finalCost || 0), 0);
     const totalCollected = invoices.reduce((s, i) => s + (i.advancePaid || 0), 0) +
@@ -1402,4 +1707,111 @@ const BCGStore = {
   }
 };
 
+// ============================================================================
+// REAL SHOPPING CART ENGINE (Supports Journey A & B)
+// ============================================================================
+const BCGCart = {
+  getItems: function() {
+    try {
+      const data = localStorage.getItem(BCG_CART_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  saveItems: function(items) {
+    try {
+      localStorage.setItem(BCG_CART_KEY, JSON.stringify(items));
+      this.updateBadge();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  addItem: function(product, qty = 1, options = {}) {
+    const items = this.getItems();
+    const cartItemId = options.lensId ? `${product.id}-${options.lensId}` : product.id;
+    const existingIndex = items.findIndex(it => it.cartItemId === cartItemId);
+
+    if (existingIndex !== -1) {
+      items[existingIndex].qty += qty;
+    } else {
+      items.push({
+        cartItemId: cartItemId,
+        id: product.id,
+        brand: product.brand,
+        model: product.model,
+        sku: product.sku,
+        category: product.category,
+        image: product.image,
+        price: product.price + (options.lensPrice || 0),
+        framePrice: product.price,
+        lensId: options.lensId || null,
+        lensName: options.lensName || null,
+        lensPrice: options.lensPrice || 0,
+        hasPrescription: !!options.hasPrescription,
+        prescriptionDetails: options.prescriptionDetails || null,
+        mrp: product.mrp + (options.lensPrice ? options.lensPrice + 500 : 0),
+        qty: qty
+      });
+    }
+
+    this.saveItems(items);
+    if (window.BCGUI && window.BCGUI.toast) {
+      window.BCGUI.toast(`Added ${product.brand} ${product.model} to Cart!`, "success");
+    }
+    return items;
+  },
+
+  updateQty: function(cartItemId, newQty) {
+    let items = this.getItems();
+    if (newQty <= 0) {
+      items = items.filter(it => it.cartItemId !== cartItemId);
+    } else {
+      const it = items.find(i => i.cartItemId === cartItemId);
+      if (it) it.qty = newQty;
+    }
+    this.saveItems(items);
+    return items;
+  },
+
+  removeItem: function(cartItemId) {
+    const items = this.getItems().filter(it => it.cartItemId !== cartItemId);
+    this.saveItems(items);
+    if (window.BCGUI && window.BCGUI.toast) {
+      window.BCGUI.toast("Item removed from Cart", "info");
+    }
+    return items;
+  },
+
+  clear: function() {
+    localStorage.removeItem(BCG_CART_KEY);
+    this.updateBadge();
+  },
+
+  getCount: function() {
+    return this.getItems().reduce((s, it) => s + (it.qty || 1), 0);
+  },
+
+  getSubtotal: function() {
+    return this.getItems().reduce((s, it) => s + ((it.price || 0) * (it.qty || 1)), 0);
+  },
+
+  updateBadge: function() {
+    const count = this.getCount();
+    document.querySelectorAll('.cart-count-badge').forEach(el => {
+      el.textContent = count;
+      el.style.display = count > 0 ? 'inline-flex' : 'none';
+    });
+  }
+};
+
 window.BCGStore = BCGStore;
+window.BCGCart = BCGCart;
+
+// Initial setup of badge count
+document.addEventListener('DOMContentLoaded', () => {
+  BCGCart.updateBadge();
+});

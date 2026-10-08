@@ -2,7 +2,8 @@
 
 **Positioning:** Complete Eye Care & Optical Solutions  
 **Phase:** Phase 1 — Production-Ready Foundation  
-**Headquarters:** Shop No. 12-14, Medical Complex, Main Market, Civil Lines, Kanpur, Uttar Pradesh - 208001  
+**Headquarters:** Itaily Moad, Maudha Road, Mehnajpur, Azamgarh  
+**Doctor:** Dr. Satya Prakash Bhardwaj  
 **GSTIN:** `09AAEFB1234K1ZV`
 
 ---
@@ -24,7 +25,7 @@ Doctor Eye Examination (Autorefraction, SPH, CYL, AXIS, ADD, PD, IOP)
        ↓
 Doctor Prescription & Medicines (Rx Pad)
        ↓
-"SAVE & SEND TO OPTICAL" (Auto-generates Optical Job e.g. BCG-00125)
+"SAVE & SEND TO OPTICAL" (Auto-generates Optical Job e.g. BCG-OPT-00125)
        ↓
 Optical Staff Receives Job in Real-Time
        ↓
@@ -34,7 +35,7 @@ Automated Price Calculation (Frame + Lens + Fitting - Discount = Total)
        ↓
 Advance Payment & Balance Due Recording
        ↓
-Automated GST Tax Invoice Generation
+Staff Generates GST Tax Invoice (Invoice created ONLY by Staff)
        ↓
 Workshop Production Pipeline:
   [Prescription Received] → [Frame Selected] → [Lens Processing] →
@@ -49,12 +50,12 @@ Customer 360° Profile & Live Chasma Tracker
 
 | Role | Default User | Default Credentials | Primary Responsibilities |
 |---|---|---|---|
-| **DOCTOR** | Dr. Alok Bhardwaj (MS Ophthalmology) | `doctor@bhardwajchasma.com` / `doctor` | Eye examinations, refraction, medicine prescription, Rx reports, **"Save & Send to Optical"** |
-| **STAFF** | Manoj Sharma (Senior Optometrist) | `staff@bhardwajchasma.com` / `staff` | Optical jobs, frame/lens selection, billing calculation, workshop status updates, repair tickets |
-| **CUSTOMER** | Rahul Sharma | `9876543210` / `user` | View own prescriptions, live chasma production pipeline tracker, balance dues, invoices, repair tickets |
-| **ADMIN** | Rajeev Bhardwaj | `admin@bhardwajchasma.com` / `admin` | Complete oversight, revenue analytics, frame stock, staff permission toggles, business settings, audit trail |
+| **DOCTOR** | Dr. Satya Prakash Bhardwaj (Consultant Eye Doctor) | `doctor@bhardwajchasma.com` / `doctor` | Eye examinations, refraction, medicine prescription, Rx reports, **"Save & Send to Optical"** |
+| **STAFF** | Manoj Sharma (Senior Dispenser) | `staff@bhardwajchasma.com` / `staff` | Orders verification, optical jobs, frame/lens selection, billing & invoice generation, workshop status updates, repair tickets |
+| **CUSTOMER** | Rahul Sharma | `9876543210` / `user` | Browse products, place order requests, view prescriptions, live chasma tracker, balance dues, invoices (after staff generates), repair tickets |
+| **ADMIN** | Rajeev Bhardwaj | `admin@bhardwajchasma.com` / `admin` | Complete oversight, Customer 360, revenue analytics, frame stock, staff permission toggles, business settings, audit trail |
 
-*(Note: The login page includes an **Instant 1-Click Role Switcher** for instant pair evaluation!)*
+*(Note: The login page includes an **Instant 1-Click Role Switcher** for instant evaluation!)*
 
 ---
 

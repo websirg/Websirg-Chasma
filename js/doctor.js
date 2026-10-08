@@ -1,18 +1,19 @@
 /**
- * Bhardwaj Chasma Ghar - Doctor OPD Consultation Controller (Phase 1)
+ * Bhardwaj Chasma Ghar - Doctor OPD Consultation Controller
+ * Consultant: Dr. Satya Prakash Bhardwaj
+ * Headquarters: Itaily Moad, Maudha Road, Mehnajpur, Azamgarh
  */
 
 const DoctorApp = {
   currentPatientId: null,
 
   init: function() {
-    // Role protection - Doctor or Admin
-    const user = window.BCGAuth.requireRole(['doctor', 'admin']);
+    const user = window.BCGAuth ? window.BCGAuth.requireRole(['doctor', 'admin']) : null;
     if (!user) return;
 
-    if (user) {
-      const docNameEl = document.getElementById('doc-name');
-      if (docNameEl) docNameEl.textContent = user.name;
+    const docNameEl = document.getElementById('doc-name');
+    if (docNameEl) {
+      docNameEl.textContent = (user && user.role === 'doctor') ? user.name : "Dr. Satya Prakash Bhardwaj";
     }
 
     this.renderStats();
@@ -79,7 +80,7 @@ const DoctorApp = {
       <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--bg-subtle); border-radius:var(--radius-md); font-size:0.86rem;">
         <div>
           <strong>${p.name}</strong><br>
-          <small style="color:var(--text-muted);">${p.phone} • ${p.age} Yrs</small>
+          <small style="color:var(--text-muted);">${p.phone} • ${p.age} Yrs • ${p.address || 'Mehnajpur'}</small>
         </div>
         <div style="display:flex; gap:6px;">
           <button class="btn btn-sm btn-outline" onclick="DoctorApp.selectPatientForExam('${p.id}')">Exam</button>
@@ -101,105 +102,87 @@ const DoctorApp = {
 
     if (match) {
       this.selectPatientForExam(match.id);
-      BCGUI.toast(`Found patient ${match.name}`, "success");
+      BCGUI.toast(`Found patient: ${match.name}`, "success");
     } else {
-      BCGUI.toast("Patient not found. Register them quickly using button above.", "warning");
+      BCGUI.toast("Patient not found. You can register a new patient.", "warning");
       this.openNewPatientModal();
-      document.getElementById('np-phone').value = query.match(/^\d+$/) ? query : '';
     }
   },
 
   selectPatientForExam: function(patientId) {
     this.currentPatientId = patientId;
-    const select = document.getElementById('exam-patient-select');
-    if (select) select.value = patientId;
-    this.onPatientSelected(patientId);
+    const patient = window.BCGStore.getPatientById(patientId);
+    if (!patient) return;
 
     // Switch to examination tab
-    this.showSection('examination');
-  },
+    this.showSection('examination', document.querySelector('.sidebar-item[href="#examination"]'));
 
-  onPatientSelected: function(patientId) {
-    this.currentPatientId = patientId;
-    const patientMeta = document.getElementById('exam-patient-meta');
-    const btn360 = document.getElementById('btn-patient-360');
-
-    if (!patientId) {
-      if (patientMeta) patientMeta.innerHTML = "Select a patient above or register a new one.";
-      if (btn360) btn360.style.display = 'none';
-      return;
+    // Populate active banner
+    const banner = document.getElementById('active-patient-banner');
+    if (banner) {
+      banner.style.display = 'block';
+      document.getElementById('act-p-name').textContent = patient.name;
+      document.getElementById('act-p-id').textContent = patient.id;
+      document.getElementById('act-p-phone').textContent = patient.phone;
+      document.getElementById('act-p-age-gender').textContent = `${patient.age} Yrs / ${patient.gender}`;
+      document.getElementById('act-p-history').textContent = patient.medicalHistory || "None";
     }
 
-    const patient = window.BCGStore.getPatientById(patientId);
-    if (patient && patientMeta) {
-      patientMeta.innerHTML = `
-        <strong>${patient.name}</strong> | ${patient.age} Yrs, ${patient.gender} | Mobile: <strong>${patient.phone}</strong> | Address: ${patient.address || 'Kanpur'}<br>
-        <span style="color:var(--text-muted); font-size:0.8rem;">Clinical Notes: ${patient.medicalHistory || 'None'}</span>
-      `;
-      if (btn360) btn360.style.display = 'inline-flex';
-    }
-  },
-
-  viewCurrentPatient360: function() {
-    if (this.currentPatientId) {
-      BCGUI.openCustomer360(this.currentPatientId);
-    }
+    const dropdown = document.getElementById('exam-patient-select');
+    if (dropdown) dropdown.value = patientId;
   },
 
   initDefaultMedicines: function() {
     const tbody = document.getElementById('meds-table-body');
     if (!tbody) return;
+
     tbody.innerHTML = `
       <tr>
         <td><input type="text" class="form-control med-name" value="Tears Naturale II Lubricating Drops"></td>
-        <td><input type="text" class="form-control med-dose" value="1 Drop"></td>
-        <td><input type="text" class="form-control med-freq" value="1-1-1 (Thrice daily)"></td>
-        <td><input type="text" class="form-control med-duration" value="15 Days"></td>
-        <td><input type="text" class="form-control med-inst" value="Instill in both eyes"></td>
+        <td><input type="text" class="form-control med-dose" value="1 drop"></td>
+        <td><input type="text" class="form-control med-freq" value="Thrice daily (1-1-1)"></td>
+        <td><input type="text" class="form-control med-duration" value="20 Days"></td>
+        <td><input type="text" class="form-control med-inst" value="Both eyes"></td>
         <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">&times;</button></td>
       </tr>
     `;
   },
 
-  addMedicineRow: function() {
+  addMedicineRow: function(name = "", dose = "1 drop", freq = "Twice daily", dur = "15 Days", inst = "Both eyes") {
     const tbody = document.getElementById('meds-table-body');
     if (!tbody) return;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input type="text" class="form-control med-name" placeholder="Medicine Name"></td>
-      <td><input type="text" class="form-control med-dose" placeholder="1 Drop / 1 Tab" value="1 Drop"></td>
-      <td><input type="text" class="form-control med-freq" placeholder="1-0-1 / SOS" value="1-0-1"></td>
-      <td><input type="text" class="form-control med-duration" placeholder="e.g. 10 Days" value="10 Days"></td>
-      <td><input type="text" class="form-control med-inst" placeholder="Instructions" value="After food / Both eyes"></td>
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td><input type="text" class="form-control med-name" placeholder="Medicine / Eye Drop" value="${name}"></td>
+      <td><input type="text" class="form-control med-dose" placeholder="Dose" value="${dose}"></td>
+      <td><input type="text" class="form-control med-freq" placeholder="Frequency" value="${freq}"></td>
+      <td><input type="text" class="form-control med-duration" placeholder="Duration" value="${dur}"></td>
+      <td><input type="text" class="form-control med-inst" placeholder="Instructions" value="${inst}"></td>
       <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">&times;</button></td>
     `;
-    tbody.appendChild(tr);
+    tbody.appendChild(row);
   },
 
   openNewPatientModal: function() {
-    document.getElementById('form-new-patient').reset();
     BCGUI.openModal('modal-new-patient');
   },
 
   submitNewPatient: function() {
     const name = document.getElementById('np-name').value.trim();
     const phone = document.getElementById('np-phone').value.trim();
-    const age = parseInt(document.getElementById('np-age').value) || 0;
+    const age = document.getElementById('np-age').value.trim();
     const gender = document.getElementById('np-gender').value;
     const address = document.getElementById('np-address').value.trim();
     const history = document.getElementById('np-history').value.trim();
 
-    // Check duplicate
-    const existing = window.BCGStore.getPatients().find(p => p.phone === phone);
-    if (existing) {
-      BCGUI.toast(`Patient already exists with phone ${phone} (${existing.name})`, "warning");
-      BCGUI.closeModal('modal-new-patient');
-      this.selectPatientForExam(existing.id);
+    if (!name || !phone) {
+      BCGUI.toast("Patient name and phone are required", "error");
       return;
     }
 
     const newPatient = window.BCGStore.addPatient({
-      name, phone, age, gender, address, medicalHistory: history
+      name, phone, age, gender, address: address || "Mehnajpur, Azamgarh", medicalHistory: history
     });
 
     BCGUI.toast(`Patient ${name} registered successfully!`, "success");
@@ -213,7 +196,7 @@ const DoctorApp = {
   // Save Prescription (save only OR Save & Send to Optical)
   savePrescription: function(sendToOptical = false) {
     if (!this.currentPatientId) {
-      BCGUI.toast("Please select a patient before saving prescription", "error");
+      BCGUI.toast("Please select a patient before issuing prescription", "error");
       return;
     }
 
@@ -222,6 +205,9 @@ const DoctorApp = {
       BCGUI.toast("Invalid patient selected", "error");
       return;
     }
+
+    const settings = window.BCGStore.getSettings();
+    const doctorName = settings.doctorName || "Dr. Satya Prakash Bhardwaj";
 
     const rightEye = {
       sph: document.getElementById('od-sph').value.trim(),
@@ -259,7 +245,7 @@ const DoctorApp = {
     // 1. Record Examination
     const exam = window.BCGStore.addExamination({
       patientId: this.currentPatientId,
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: doctorName,
       rightEye,
       leftEye,
       pd,
@@ -273,7 +259,7 @@ const DoctorApp = {
     const result = window.BCGStore.addPrescription({
       patientId: this.currentPatientId,
       examId: exam.id,
-      doctorName: "Dr. Alok Bhardwaj",
+      doctorName: doctorName,
       rightEye,
       leftEye,
       pd,
@@ -287,7 +273,6 @@ const DoctorApp = {
 
     if (sendToOptical) {
       BCGUI.toast(`Prescription issued & Dispatched to Optical Team! Optical Job: ${result.opticalJobId}`, "success");
-      // Open the printable Rx preview
       BCGUI.openRxModal(result.prescription.id);
     } else {
       BCGUI.toast(`Prescription saved successfully (#${result.prescription.id})`, "success");
@@ -319,13 +304,14 @@ const DoctorApp = {
         <td><strong>${p.name}</strong></td>
         <td>${p.phone}</td>
         <td>${p.age} Yrs / ${p.gender}</td>
-        <td>${p.address || 'Kanpur'}</td>
-        <td><small style="color:var(--text-muted);">${p.medicalHistory || 'None'}</small></td>
+        <td>${p.address || 'Mehnajpur'}</td>
         <td>
-          <div style="display:flex; gap:6px;">
-            <button class="btn btn-sm btn-primary" onclick="DoctorApp.selectPatientForExam('${p.id}')">Examine</button>
-            <button class="btn btn-sm btn-outline" onclick="BCGUI.openCustomer360('${p.id}')">Customer 360°</button>
-          </div>
+          <button class="btn btn-sm btn-primary" onclick="DoctorApp.selectPatientForExam('${p.id}')">
+            <i class="fa-solid fa-stethoscope"></i> Checkup
+          </button>
+          <button class="btn btn-sm btn-outline" onclick="BCGUI.openCustomer360('${p.id}')">
+            360° Profile
+          </button>
         </td>
       </tr>
     `).join('');
@@ -342,17 +328,23 @@ const DoctorApp = {
         <tr>
           <td><strong>${rx.id}</strong></td>
           <td>${rx.date}</td>
-          <td><strong>${patient.name || 'Patient'}</strong><br><small style="color:var(--text-muted);">${patient.phone || ''}</small></td>
-          <td>SPH: ${rx.rightEye.sph || '0'} | CYL: ${rx.rightEye.cyl || '0'} | AX: ${rx.rightEye.axis || '-'}</td>
-          <td>SPH: ${rx.leftEye.sph || '0'} | CYL: ${rx.leftEye.cyl || '0'} | AX: ${rx.leftEye.axis || '-'}</td>
+          <td>
+            <strong>${patient.name || rx.patientId}</strong><br>
+            <small style="color:var(--text-muted);">${patient.phone || ''}</small>
+          </td>
+          <td>
+            OD: ${rx.rightEye?.sph || '0.00'} / ${rx.rightEye?.cyl || '0.00'}<br>
+            OS: ${rx.leftEye?.sph || '0.00'} / ${rx.leftEye?.cyl || '0.00'}
+          </td>
+          <td>${rx.lensRecommendation || 'Anti-Glare'}</td>
           <td>
             <span class="badge ${rx.opticalStatus === 'Sent to Optical' ? 'badge-success' : 'badge-neutral'}">
-              ${rx.opticalStatus || 'Saved'} ${rx.opticalJobId ? `(${rx.opticalJobId})` : ''}
+              ${rx.opticalStatus}
             </span>
           </td>
           <td>
             <button class="btn btn-sm btn-outline" onclick="BCGUI.openRxModal('${rx.id}')">
-              <i class="fa-solid fa-eye"></i> View Rx Pad
+              <i class="fa-solid fa-print"></i> View Rx
             </button>
           </td>
         </tr>

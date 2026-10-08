@@ -385,9 +385,11 @@ const AdminApp = {
 
     document.getElementById('set-name').value = s.name || '';
     document.getElementById('set-tagline').value = s.tagline || '';
+    if (document.getElementById('set-doctor')) document.getElementById('set-doctor').value = s.doctorName || 'Dr. Satya Prakash Bhardwaj';
     document.getElementById('set-phone').value = s.phone || '';
     document.getElementById('set-gstin').value = s.gstin || '';
     document.getElementById('set-address').value = s.address || '';
+    if (document.getElementById('set-map-url')) document.getElementById('set-map-url').value = s.mapEmbedUrl || '';
     document.getElementById('set-fitting').value = s.fittingCharge || 150;
     document.getElementById('set-tax').value = s.taxRate || 12;
   },
@@ -395,14 +397,16 @@ const AdminApp = {
   saveSettings: function() {
     const name = document.getElementById('set-name').value.trim();
     const tagline = document.getElementById('set-tagline').value.trim();
+    const doctorName = document.getElementById('set-doctor') ? document.getElementById('set-doctor').value.trim() : 'Dr. Satya Prakash Bhardwaj';
     const phone = document.getElementById('set-phone').value.trim();
     const gstin = document.getElementById('set-gstin').value.trim();
     const address = document.getElementById('set-address').value.trim();
+    const mapEmbedUrl = document.getElementById('set-map-url') ? document.getElementById('set-map-url').value.trim() : '';
     const fittingCharge = Number(document.getElementById('set-fitting').value) || 150;
     const taxRate = Number(document.getElementById('set-tax').value) || 12;
 
     window.BCGStore.updateSettings({
-      name, tagline, phone, gstin, address, fittingCharge, taxRate
+      name, tagline, doctorName, phone, gstin, address, mapEmbedUrl, fittingCharge, taxRate
     });
 
     BCGUI.toast("Business configuration updated successfully!", "success");

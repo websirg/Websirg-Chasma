@@ -43,7 +43,7 @@
         Contact Bhardwaj Chasma Ghar
       </h1>
       <p style="color:var(--text-muted); font-size:1.05rem; max-width:680px; margin-top:8px;">
-        Conveniently located in Civil Lines, Kanpur. Walk-in eye examinations and optical frame trials available seven days a week.
+        Conveniently located at Itaily Moad, Maudha Road, Mehnajpur, Azamgarh. Walk-in eye checkups and precision optical frame dispensing available seven days a week.
       </p>
     </div>
   </section>
@@ -58,33 +58,35 @@
             <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i> Showroom & OPD Address
           </h3>
           <p style="font-size:0.95rem; line-height:1.7; color:var(--text-muted); margin-bottom:16px;">
-            <strong>Bhardwaj Chasma Ghar</strong><br>
-            Shop No. 12-14, Medical Complex, Main Market,<br>
-            Civil Lines, Kanpur, Uttar Pradesh - 208001
+            <strong id="contact-business-name">Bhardwaj Chasma Ghar</strong><br>
+            <span id="contact-address-text">Itaily Moad, Maudha Road, Mehnajpur, Azamgarh</span>
           </p>
 
           <div style="display:flex; flex-direction:column; gap:12px; font-size:0.9rem; margin-bottom:20px;">
             <div>
               <i class="fa-solid fa-phone" style="color:var(--secondary); width:20px;"></i>
-              <strong>Telephone:</strong> +91 98390 12345, +91 94150 67890
+              <strong>Telephone:</strong> <span id="contact-phone-text">+91 98390 12345</span>
             </div>
             <div>
               <i class="fa-solid fa-envelope" style="color:var(--accent); width:20px;"></i>
-              <strong>Email:</strong> care@bhardwajchasma.com
+              <strong>Email:</strong> <span id="contact-email-text">care@bhardwajchasma.com</span>
             </div>
             <div>
               <i class="fa-solid fa-clock" style="color:var(--amber); width:20px;"></i>
-              <strong>Store Timings:</strong> Monday to Sunday: 10:00 AM – 9:00 PM
+              <strong>Store Timings:</strong> Monday to Sunday: 9:00 AM – 8:00 PM
             </div>
             <div>
               <i class="fa-solid fa-user-doctor" style="color:var(--primary); width:20px;"></i>
-              <strong>Doctor OPD Timings:</strong> Mon - Sat: 11:00 AM – 2:00 PM & 5:30 PM – 8:30 PM
+              <strong>Doctor OPD:</strong> <span id="contact-doctor-text">Dr. Satya Prakash Bhardwaj</span> (Daily Walk-in OPD)
             </div>
           </div>
 
-          <div style="display:flex; gap:12px;">
-            <a href="doctor.html" class="btn btn-primary">OPD Consultation</a>
-            <a href="store.html" class="btn btn-outline">Explore Eyewear</a>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <a href="doctor.html" class="btn btn-primary"><i class="fa-solid fa-stethoscope"></i> OPD Checkup</a>
+            <a href="store.html" class="btn btn-outline"><i class="fa-solid fa-glasses"></i> Explore Eyewear</a>
+            <a href="https://maps.google.com/?q=Mehnajpur,+Azamgarh,+Uttar+Pradesh" target="_blank" class="btn btn-outline" id="contact-dir-btn">
+              <i class="fa-solid fa-diamond-turn-right"></i> Get Directions
+            </a>
           </div>
         </div>
       </div>
@@ -94,7 +96,7 @@
         <div class="card" style="margin-bottom:0;">
           <h3 style="font-size:1.25rem; font-weight:800; margin-bottom:8px;">Send Optical or Clinical Inquiry</h3>
           <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:20px;">
-            Have a question regarding progressive lens adaptation, frame availability, or repair quotes? Drop your details below:
+            Have a question regarding progressive lenses, frame availability, or spectacle repair? Drop your details below:
           </p>
 
           <form onsubmit="event.preventDefault(); BCGUI.toast('Thank you! Your message has been received. Our optical staff will call you shortly.', 'success'); this.reset();">
@@ -114,7 +116,7 @@
                   <option value="lens">Lens / Progressive Options</option>
                   <option value="frame">Frame Availability</option>
                   <option value="repair">Chasma Repair Cost</option>
-                  <option value="doctor">Eye Examination Inquiry</option>
+                  <option value="doctor">Eye Checkup Inquiry</option>
                 </select>
               </div>
             </div>
@@ -140,16 +142,17 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
         <div>
           <span class="badge badge-teal"><i class="fa-solid fa-map-location-dot"></i> Interactive Map</span>
-          <h3 style="font-size:1.3rem; font-weight:800; margin-top:4px;">Civil Lines Showroom Navigation</h3>
+          <h3 style="font-size:1.3rem; font-weight:800; margin-top:4px;">Mehnajpur Showroom & OPD Navigation</h3>
         </div>
-        <a href="https://maps.google.com/?q=Civil+Lines+Kanpur" target="_blank" class="btn btn-sm btn-primary">
+        <a href="https://maps.google.com/?q=Mehnajpur,+Azamgarh,+Uttar+Pradesh" target="_blank" class="btn btn-sm btn-primary" id="contact-map-btn">
           <i class="fa-solid fa-diamond-turn-right"></i> Open in Google Maps App
         </a>
       </div>
 
       <div class="card" style="padding:8px; border-radius:var(--radius-xl); box-shadow:var(--shadow-lg); overflow:hidden; margin-bottom:0;">
         <iframe 
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d114324.76774640954!2d80.24523789396344!3d26.46741492582888!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x399c47849cb1519b%3A0xb7f0aa9f86ef1083!2sCivil%20Lines%2C%20Kanpur%2C%20Uttar%20Pradesh!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
+          id="contact-map-frame"
+          src="https://maps.google.com/maps?q=Mehnajpur,+Azamgarh,+Uttar+Pradesh&t=&z=15&ie=UTF8&iwloc=&output=embed" 
           width="100%" 
           height="480" 
           style="border:0; border-radius:var(--radius-lg); display:block;" 
@@ -161,59 +164,31 @@
     </div>
   </section>
 
-      <!-- Quick Message / Optical Query Form -->
-      <div>
-        <div class="card">
-          <h3 style="font-size:1.25rem; font-weight:800; margin-bottom:8px;">Send Optical or Clinical Inquiry</h3>
-          <p style="color:var(--text-muted); font-size:0.88rem; margin-bottom:20px;">
-            Have a question regarding progressive lens adaptation, frame availability, or repair quotes? Drop your details below:
-          </p>
-
-          <form onsubmit="event.preventDefault(); BCGUI.toast('Thank you! Your message has been received. Our optical staff will call you shortly.', 'success'); this.reset();">
-            <div class="form-group">
-              <label class="form-label">Full Name *</label>
-              <input type="text" class="form-control" required placeholder="e.g. Anand Kumar">
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Mobile Number *</label>
-                <input type="tel" class="form-control" required placeholder="10-digit number">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Inquiry Type</label>
-                <select class="form-control">
-                  <option value="lens">Lens / Progressive Options</option>
-                  <option value="frame">Frame Availability</option>
-                  <option value="repair">Chasma Repair Cost</option>
-                  <option value="doctor">Eye Examination Inquiry</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Your Message / Prescription Power Details</label>
-              <textarea class="form-control" rows="4" placeholder="Mention your spectacle power or questions regarding blue-cut coating, titanium frames, etc..."></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
-              <i class="fa-solid fa-paper-plane"></i> Send Inquiry
-            </button>
-          </form>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
   <footer style="background:#0f172a; color:#f8fafc; padding:40px 0 20px;">
     <div class="container" style="text-align:center; font-size:0.82rem; color:#94a3b8;">
       <p>&copy; 2026 Bhardwaj Chasma Ghar — Complete Eye Care & Optical Solutions</p>
+      <p style="margin-top:4px;">Itaily Moad, Maudha Road, Mehnajpur, Azamgarh</p>
     </div>
   </footer>
 
   <script src="js/store.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof BCGStore !== 'undefined') {
+        const s = BCGStore.getSettings();
+        if (s) {
+          if (document.getElementById('contact-address-text')) document.getElementById('contact-address-text').textContent = s.address;
+          if (document.getElementById('contact-phone-text')) document.getElementById('contact-phone-text').textContent = s.phone;
+          if (document.getElementById('contact-email-text')) document.getElementById('contact-email-text').textContent = s.email;
+          if (document.getElementById('contact-doctor-text')) document.getElementById('contact-doctor-text').textContent = s.doctorName;
+          if (s.mapUrl && document.getElementById('contact-map-frame')) {
+            document.getElementById('contact-map-frame').src = s.mapUrl;
+          }
+        }
+      }
+    });
+  </script>
 </body>
 </html>

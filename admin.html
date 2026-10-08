@@ -94,6 +94,26 @@
         
         <!-- SECTION 1: DASHBOARD -->
         <div id="section-dashboard">
+          <!-- Customer 360 Quick Lookup Bar -->
+          <div class="card" style="margin-bottom:20px; padding:14px 20px; background:linear-gradient(135deg, #f0f9ff, #ffffff); border:1px solid #bae6fd;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h4 style="font-size:0.95rem; font-weight:800; color:var(--text-main); margin-bottom:2px;">
+                  <i class="fa-solid fa-address-card" style="color:var(--primary);"></i> Customer 360° Lifetime Profile Search
+                </h4>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">
+                  Search by customer mobile number or ID to inspect complete lifetime records (Exams, Prescriptions, Optical Jobs, Store Orders, Repairs, Invoices, Dues).
+                </p>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="adm-c360-search" class="form-control" style="width:220px; font-size:0.85rem;" placeholder="e.g. 9876543210" value="9876543210">
+                <button class="btn btn-sm btn-primary" onclick="const q = document.getElementById('adm-c360-search').value.trim(); if(q) BCGUI.openCustomer360(q); else BCGUI.toast('Enter mobile number', 'warning');">
+                  <i class="fa-solid fa-magnifying-glass"></i> Open 360°
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Revenue Metrics Grid -->
           <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
             <h3 style="font-size:0.95rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted);">
@@ -373,17 +393,28 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label">Official Phone Numbers</label>
-                  <input type="text" id="set-phone" class="form-control" required>
+                  <label class="form-label">Consultant Doctor Name *</label>
+                  <input type="text" id="set-doctor" class="form-control" required value="Dr. Satya Prakash Bhardwaj">
                 </div>
                 <div class="form-group">
-                  <label class="form-label">GSTIN Number</label>
+                  <label class="form-label">Official Phone Numbers *</label>
+                  <input type="text" id="set-phone" class="form-control" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">GSTIN Number *</label>
                   <input type="text" id="set-gstin" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Google Maps Embed URL</label>
+                  <input type="text" id="set-map-url" class="form-control" placeholder="https://maps.google.com/maps?q=...">
                 </div>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Store & Clinical Address</label>
+                <label class="form-label">Store & Clinical Address *</label>
                 <input type="text" id="set-address" class="form-control" required>
               </div>
 
