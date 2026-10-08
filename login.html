@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unified Portal Access — Bhardwaj Chasma Ghar</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="min-height:100vh; display:flex; flex-direction:column; justify-content:center; background:linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%);">
+
+  <div class="container" style="max-width:480px; padding:24px 16px;">
+    
+    <!-- Brand Header -->
+    <div style="text-align:center; margin-bottom:28px;">
+      <a href="index.html" class="brand-logo" style="display:inline-flex; margin-bottom:8px;">
+        <div class="brand-icon" style="width:52px; height:52px; font-size:26px;">
+          <i class="fa-solid fa-glasses"></i>
+        </div>
+      </a>
+      <h1 style="font-size:1.6rem; font-weight:800; color:var(--text-main);">Bhardwaj Chasma Ghar</h1>
+      <p style="font-size:0.85rem; color:var(--secondary); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">
+        Complete Eye Care & Optical Solutions
+      </p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="card" style="box-shadow:var(--shadow-xl); border:1px solid var(--border-light); padding:28px;">
+      <h2 style="font-size:1.25rem; font-weight:800; margin-bottom:4px; text-align:center;">Secure System Login</h2>
+      <p style="font-size:0.84rem; color:var(--text-muted); text-align:center; margin-bottom:20px;">
+        Role-Based Access for Doctors, Optical Staff, Patients & Admin
+      </p>
+
+      <!-- Standard Login Form -->
+      <form id="login-form" onsubmit="event.preventDefault(); LoginApp.handleLogin();">
+        <div class="form-group">
+          <label class="form-label">Email Address or Mobile Number</label>
+          <div style="position:relative;">
+            <input type="text" id="login-id" class="form-control" required placeholder="doctor@bhardwajchasma.com or 9876543210" style="padding-left:36px;">
+            <i class="fa-solid fa-user" style="position:absolute; left:12px; top:12px; color:var(--text-dim);"></i>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:20px;">
+          <label class="form-label">Password</label>
+          <div style="position:relative;">
+            <input type="password" id="login-pass" class="form-control" required placeholder="Enter password" style="padding-left:36px;">
+            <i class="fa-solid fa-lock" style="position:absolute; left:12px; top:12px; color:var(--text-dim);"></i>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-bottom:20px;">
+          <i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard
+        </button>
+      </form>
+
+      <!-- Quick 1-Click Role Switcher for Seamless Testing -->
+      <div style="border-top:1px dashed var(--border-medium); padding-top:20px;">
+        <p style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); text-align:center; margin-bottom:12px;">
+          ⚡ Instant One-Click Role Switcher (Evaluation Demo)
+        </p>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <button type="button" class="btn btn-sm btn-outline" onclick="LoginApp.quickSwitch('doctor')" style="border-color:#0d9488; color:#0f766e;">
+            <i class="fa-solid fa-stethoscope"></i> Doctor OPD
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" onclick="LoginApp.quickSwitch('staff')" style="border-color:#0284c7; color:#0369a1;">
+            <i class="fa-solid fa-glasses"></i> Optical Staff
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" onclick="LoginApp.quickSwitch('customer')" style="border-color:#10b981; color:#047857;">
+            <i class="fa-solid fa-user"></i> Patient View
+          </button>
+          <button type="button" class="btn btn-sm btn-outline" onclick="LoginApp.quickSwitch('admin')" style="border-color:#7c3aed; color:#6d28d9;">
+            <i class="fa-solid fa-user-shield"></i> Admin Panel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
+      <a href="index.html" style="font-size:0.86rem; color:var(--text-muted); font-weight:600;">
+        &larr; Return to Public Website
+      </a>
+    </div>
+
+  </div>
+
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const LoginApp = {
+      handleLogin: function() {
+        const id = document.getElementById('login-id').value.trim();
+        const pass = document.getElementById('login-pass').value.trim();
+
+        const res = window.BCGAuth.login(id, pass);
+        if (res.success) {
+          BCGUI.toast(`Welcome, ${res.user.name}!`, "success");
+          this.redirectByRole(res.user.role);
+        } else {
+          BCGUI.toast(res.message, "error");
+        }
+      },
+
+      quickSwitch: function(role) {
+        const success = window.BCGAuth.quickLogin(role);
+        if (success) {
+          const user = window.BCGAuth.getCurrentUser();
+          BCGUI.toast(`Switched to ${user.name} (${role.toUpperCase()})`, "success");
+          setTimeout(() => this.redirectByRole(role), 300);
+        } else {
+          BCGUI.toast("Could not log in as role", "error");
+        }
+      },
+
+      redirectByRole: function(role) {
+        if (role === 'doctor') window.location.href = "doctor.html";
+        else if (role === 'staff') window.location.href = "staff.html";
+        else if (role === 'admin') window.location.href = "admin.html";
+        else window.location.href = "customer.html";
+      }
+    };
+  </script>
+</body>
+</html>

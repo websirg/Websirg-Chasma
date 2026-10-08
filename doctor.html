@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doctor Consultation & OPD Panel — Bhardwaj Chasma Ghar</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Doctor Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="brand-icon"><i class="fa-solid fa-glasses"></i></div>
+          <div class="brand-info">
+            <h1>Bhardwaj</h1>
+            <p>Doctor OPD Panel</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-section-title">Clinical Care</p>
+        <a href="#dashboard" class="sidebar-item active" onclick="DoctorApp.showSection('dashboard', this)">
+          <i class="fa-solid fa-chart-line"></i> Dashboard
+        </a>
+        <a href="#examination" class="sidebar-item" onclick="DoctorApp.showSection('examination', this)">
+          <i class="fa-solid fa-stethoscope"></i> Eye Examination & Rx
+        </a>
+        <a href="#patients" class="sidebar-item" onclick="DoctorApp.showSection('patients', this)">
+          <i class="fa-solid fa-users"></i> Patient Records
+        </a>
+        <a href="#prescriptions" class="sidebar-item" onclick="DoctorApp.showSection('prescriptions', this)">
+          <i class="fa-solid fa-file-prescription"></i> All Prescriptions
+        </a>
+
+        <p class="nav-section-title" style="margin-top:16px;">Quick Links</p>
+        <a href="index.html" class="sidebar-item" target="_blank">
+          <i class="fa-solid fa-globe"></i> Public Website
+        </a>
+        <a href="staff.html" class="sidebar-item">
+          <i class="fa-solid fa-boxes-stacked"></i> Optical Staff Queue
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <div class="user-avatar" id="doc-avatar">AB</div>
+          <div class="user-meta">
+            <h4 id="doc-name">Dr. Alok Bhardwaj</h4>
+            <p>Ophthalmologist (MS)</p>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="BCGAuth.logout()" style="margin-left:auto; padding:6px 8px;" title="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <div style="display:flex; align-items:center; gap:16px;">
+          <h2 style="font-size:1.15rem; font-weight:800;" id="page-title">OPD Consultation & Clinical Examination</h2>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="btn btn-sm btn-outline" onclick="DoctorApp.openNewPatientModal()">
+            <i class="fa-solid fa-user-plus"></i> Register Patient
+          </button>
+          <a href="customer.html" class="btn btn-sm btn-outline" title="Switch view">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i> Switch Role
+          </a>
+        </div>
+      </header>
+
+      <div class="page-body">
+        
+        <!-- SECTION 1: DASHBOARD -->
+        <div id="section-dashboard">
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-icon primary"><i class="fa-solid fa-user-injured"></i></div>
+              <div class="stat-info">
+                <p>Total Patients</p>
+                <h3 id="stat-total-patients">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon teal"><i class="fa-solid fa-file-prescription"></i></div>
+              <div class="stat-info">
+                <p>Prescriptions Issued</p>
+                <h3 id="stat-total-rx">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon emerald"><i class="fa-solid fa-share-from-square"></i></div>
+              <div class="stat-info">
+                <p>Dispatched to Optical</p>
+                <h3 id="stat-sent-optical">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon amber"><i class="fa-solid fa-calendar-day"></i></div>
+              <div class="stat-info">
+                <p>Today's Consultations</p>
+                <h3 id="stat-today-exams">0</h3>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-bolt" style="color:var(--primary);"></i> Quick Examination Launcher</h3>
+              </div>
+              <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:16px;">
+                Search patient by mobile or name to start refraction testing and issue prescription:
+              </p>
+              <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="text" id="quick-patient-search" class="form-control" placeholder="Enter Patient Phone (e.g. 9876543210) or Name..." onkeyup="if(event.key==='Enter') DoctorApp.searchAndSelectPatient()">
+                <button class="btn btn-primary" onclick="DoctorApp.searchAndSelectPatient()">
+                  <i class="fa-solid fa-magnifying-glass"></i> Start Exam
+                </button>
+              </div>
+
+              <div id="quick-search-results"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent OPD Patients</h3>
+              </div>
+              <div id="recent-patients-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: EYE EXAMINATION & RX FORM -->
+        <div id="section-examination" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title"><i class="fa-solid fa-eye" style="color:var(--primary);"></i> Clinical Refraction & Spectacle Prescription</h3>
+                <small style="color:var(--text-muted);">Standardized Optometric & Ophthalmic Examination Record</small>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn btn-sm btn-outline" id="btn-patient-360" style="display:none;" onclick="DoctorApp.viewCurrentPatient360()">
+                  <i class="fa-solid fa-circle-info"></i> Customer 360
+                </button>
+                <button class="btn btn-sm btn-outline" onclick="DoctorApp.clearExamForm()">
+                  <i class="fa-solid fa-rotate-left"></i> Reset Form
+                </button>
+              </div>
+            </div>
+
+            <!-- Patient Selector / Details Bar -->
+            <div style="background:var(--bg-subtle); padding:16px; border-radius:var(--radius-md); margin-bottom:24px;">
+              <div class="form-row">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Select Patient *</label>
+                  <select id="exam-patient-select" class="form-control" onchange="DoctorApp.onPatientSelected(this.value)">
+                    <option value="">-- Choose Existing Patient --</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label class="form-label">Patient Details</label>
+                  <div id="exam-patient-meta" style="font-size:0.86rem; padding:10px; background:#fff; border-radius:var(--radius-md); border:1px solid var(--border-medium); min-height:42px;">
+                    Select a patient above or register a new one.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 1: Eye Refraction Grid -->
+            <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:12px; color:var(--text-main);">
+              <i class="fa-solid fa-glasses" style="color:var(--primary);"></i> Step 1: Spectacle Refraction (Right & Left Eye)
+            </h4>
+            
+            <div class="rx-grid-container">
+              <table class="rx-table">
+                <thead>
+                  <tr>
+                    <th style="width:160px;">Eye</th>
+                    <th>SPH (Spherical)</th>
+                    <th>CYL (Cylindrical)</th>
+                    <th>AXIS (1° - 180°)</th>
+                    <th>ADD (Near Add)</th>
+                    <th>Visual Acuity (V/A)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="eye-label">Right Eye (OD)</td>
+                    <td><input type="text" id="od-sph" class="rx-input" placeholder="-2.50" value="-2.50"></td>
+                    <td><input type="text" id="od-cyl" class="rx-input" placeholder="-0.50" value="-0.50"></td>
+                    <td><input type="text" id="od-axis" class="rx-input" placeholder="90" value="90"></td>
+                    <td><input type="text" id="od-add" class="rx-input" placeholder="+1.50" value=""></td>
+                    <td><input type="text" id="od-va" class="rx-input" placeholder="6/6" value="6/6"></td>
+                  </tr>
+                  <tr>
+                    <td class="eye-label">Left Eye (OS)</td>
+                    <td><input type="text" id="os-sph" class="rx-input" placeholder="-2.00" value="-2.00"></td>
+                    <td><input type="text" id="os-cyl" class="rx-input" placeholder="-0.25" value="-0.25"></td>
+                    <td><input type="text" id="os-axis" class="rx-input" placeholder="85" value="85"></td>
+                    <td><input type="text" id="os-add" class="rx-input" placeholder="+1.50" value=""></td>
+                    <td><input type="text" id="os-va" class="rx-input" placeholder="6/6" value="6/6"></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="form-row" style="margin-top:16px;">
+                <div class="form-group">
+                  <label class="form-label">Pupillary Distance (PD in mm) *</label>
+                  <input type="text" id="rx-pd" class="form-control" placeholder="e.g. 62" value="62">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Intraocular Pressure (IOP)</label>
+                  <input type="text" id="exam-iop" class="form-control" placeholder="e.g. 14 mmHg (Both eyes normal)" value="14 mmHg">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Lens Recommendation</label>
+                  <input type="text" id="rx-lens-rec" class="form-control" placeholder="e.g. Single Vision Blue Cut 1.56 Anti-Glare" value="Single Vision Blue Cut 1.56 Digital Anti-Glare">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Doctor Observations (Slit Lamp / Fundus)</label>
+                  <textarea id="exam-obs" class="form-control" rows="2" placeholder="Cornea clear, mild tear film instability, disc margins well defined..."></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Clinical Advice & Notes</label>
+                  <textarea id="exam-notes" class="form-control" rows="2" placeholder="Practice 20-20-20 rule during screen work, wear glasses constantly while driving..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Medicine Prescription -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:24px 0 12px;">
+              <h4 style="font-size:0.95rem; font-weight:800; color:var(--text-main);">
+                <i class="fa-solid fa-pills" style="color:var(--secondary);"></i> Step 2: Prescribed Eye Drops & Medicines
+              </h4>
+              <button class="btn btn-sm btn-outline" onclick="DoctorApp.addMedicineRow()">
+                <i class="fa-solid fa-plus"></i> Add Medicine
+              </button>
+            </div>
+
+            <div class="table-responsive" style="margin-bottom:24px;">
+              <table class="data-table" id="meds-table">
+                <thead>
+                  <tr>
+                    <th>Medicine Name</th>
+                    <th>Dosage</th>
+                    <th>Frequency</th>
+                    <th>Duration</th>
+                    <th>Instructions</th>
+                    <th style="width:60px;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="meds-table-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- CRITICAL WORKFLOW ACTION BUTTONS -->
+            <div style="display:flex; justify-content:flex-end; gap:16px; padding-top:20px; border-top:1px solid var(--border-light);">
+              <button class="btn btn-outline" onclick="DoctorApp.savePrescription(false)">
+                <i class="fa-solid fa-floppy-disk"></i> SAVE PRESCRIPTION
+              </button>
+              <button class="btn btn-emerald btn-lg" onclick="DoctorApp.savePrescription(true)">
+                <i class="fa-solid fa-paper-plane"></i> SAVE & SEND TO OPTICAL
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: PATIENT RECORDS -->
+        <div id="section-patients" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-users"></i> Patient Master Database</h3>
+              <button class="btn btn-sm btn-primary" onclick="DoctorApp.openNewPatientModal()">
+                <i class="fa-solid fa-plus"></i> New Patient
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Age/Gender</th>
+                    <th>Address</th>
+                    <th>Medical History</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="patients-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: ALL PRESCRIPTIONS -->
+        <div id="section-prescriptions" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-file-prescription"></i> Prescriptions Archive</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rx ID</th>
+                    <th>Date</th>
+                    <th>Patient Name</th>
+                    <th>Right Eye (OD)</th>
+                    <th>Left Eye (OS)</th>
+                    <th>Optical Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="prescriptions-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Register Patient Modal -->
+  <div id="modal-new-patient" class="modal-overlay">
+    <div class="modal-box" style="max-width:540px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Register New Patient</h3>
+        <button class="modal-close" onclick="BCGUI.closeModal('modal-new-patient')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-new-patient" onsubmit="event.preventDefault(); DoctorApp.submitNewPatient();">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="np-name" class="form-control" required placeholder="e.g. Ramesh Chandra">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile Number *</label>
+              <input type="tel" id="np-phone" class="form-control" required pattern="[0-9]{10}" placeholder="10-digit number">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Age *</label>
+              <input type="number" id="np-age" class="form-control" required min="1" max="110" placeholder="e.g. 32">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gender *</label>
+              <select id="np-gender" class="form-control" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Residential Address</label>
+            <input type="text" id="np-address" class="form-control" placeholder="e.g. Civil Lines, Kanpur">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Known Eye Strain / Medical History</label>
+            <input type="text" id="np-history" class="form-control" placeholder="e.g. High screen usage, headaches, previous glass user">
+          </div>
+
+          <div class="modal-footer" style="padding-left:0; padding-right:0;">
+            <button type="button" class="btn btn-outline" onclick="BCGUI.closeModal('modal-new-patient')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save & Start Exam</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/doctor.js"></script>
+</body>
+</html>

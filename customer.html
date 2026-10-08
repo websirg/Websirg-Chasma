@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer & Patient Portal — Bhardwaj Chasma Ghar</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Customer Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="brand-icon"><i class="fa-solid fa-glasses"></i></div>
+          <div class="brand-info">
+            <h1>Bhardwaj</h1>
+            <p>Patient Portal</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-section-title">My Vision Care</p>
+        <a href="#overview" class="sidebar-item active" onclick="CustomerApp.showSection('overview', this)">
+          <i class="fa-solid fa-house-chimney-medical"></i> Overview & Chasma
+        </a>
+        <a href="#prescriptions" class="sidebar-item" onclick="CustomerApp.showSection('prescriptions', this)">
+          <i class="fa-solid fa-file-prescription"></i> My Prescriptions
+        </a>
+        <a href="#orders" class="sidebar-item" onclick="CustomerApp.showSection('orders', this)">
+          <i class="fa-solid fa-box-open"></i> Optical Orders
+        </a>
+        <a href="#repairs" class="sidebar-item" onclick="CustomerApp.showSection('repairs', this)">
+          <i class="fa-solid fa-screwdriver-wrench"></i> Repair Status
+        </a>
+        <a href="#invoices" class="sidebar-item" onclick="CustomerApp.showSection('invoices', this)">
+          <i class="fa-solid fa-receipt"></i> Invoices & Payments
+        </a>
+        <a href="#profile" class="sidebar-item" onclick="CustomerApp.showSection('profile', this)">
+          <i class="fa-solid fa-user-gear"></i> My Profile
+        </a>
+
+        <p class="nav-section-title" style="margin-top:16px;">Browse Store</p>
+        <a href="store.html" class="sidebar-item">
+          <i class="fa-solid fa-store"></i> Optical Store
+        </a>
+        <a href="index.html" class="sidebar-item">
+          <i class="fa-solid fa-globe"></i> Main Website
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <div class="user-avatar" id="cust-avatar">RS</div>
+          <div class="user-meta">
+            <h4 id="cust-name">Rahul Sharma</h4>
+            <p id="cust-phone">9876543210</p>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="BCGAuth.logout()" style="margin-left:auto; padding:6px 8px;" title="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <div style="display:flex; align-items:center; gap:16px;">
+          <h2 style="font-size:1.15rem; font-weight:800;" id="page-title">Patient Overview & Chasma Status</h2>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <a href="doctor.html" class="btn btn-sm btn-outline" title="Doctor OPD">
+            <i class="fa-solid fa-user-doctor"></i> Doctor View
+          </a>
+          <a href="staff.html" class="btn btn-sm btn-outline" title="Staff Optical">
+            <i class="fa-solid fa-boxes-stacked"></i> Staff View
+          </a>
+        </div>
+      </header>
+
+      <div class="page-body">
+        
+        <!-- SECTION 1: OVERVIEW & ACTIVE CHASMA TRACKER -->
+        <div id="section-overview">
+          <!-- Welcome Banner -->
+          <div class="card" style="background:linear-gradient(135deg, #f0f9ff, #ffffff); border:1px solid #bae6fd;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+              <div>
+                <span class="badge badge-teal">Welcome Back</span>
+                <h2 style="font-size:1.5rem; font-weight:800; color:var(--text-main); margin-top:4px;" id="welcome-patient-name">Rahul Sharma</h2>
+                <p style="font-size:0.88rem; color:var(--text-muted);">
+                  Complete Eye Care & Precision Optical History with Bhardwaj Chasma Ghar
+                </p>
+              </div>
+              <div style="display:flex; gap:16px;">
+                <div style="background:#fff; padding:10px 16px; border-radius:var(--radius-md); border:1px solid var(--border-light); text-align:center;">
+                  <small style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase;">Last Eye Checkup</small>
+                  <p style="font-weight:700; color:var(--primary);" id="overview-last-checkup">06 Oct 2026</p>
+                </div>
+                <div style="background:#fff; padding:10px 16px; border-radius:var(--radius-md); border:1px solid var(--border-light); text-align:center;">
+                  <small style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase;">Pending Due</small>
+                  <p style="font-weight:800; color:var(--rose);" id="overview-total-due">₹0</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACTIVE CHASMA ORDER PIPELINE TRACKER -->
+          <div class="card" id="active-chasma-card">
+            <div class="card-header">
+              <div>
+                <span class="badge badge-info" id="chasma-job-badge">Live Production Status</span>
+                <h3 class="card-title" style="margin-top:4px;">
+                  <i class="fa-solid fa-glasses" style="color:var(--primary);"></i> My Chasma (Order #<span id="chasma-job-id">BCG-00125</span>)
+                </h3>
+              </div>
+              <span class="badge badge-warning" id="chasma-status-pill" style="font-size:0.85rem; padding:6px 14px;">Lens Processing</span>
+            </div>
+
+            <!-- Frame & Lens Quick Summary Grid -->
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; background:var(--bg-subtle); padding:16px; border-radius:var(--radius-md); margin-bottom:24px;">
+              <div>
+                <small style="color:var(--text-muted); font-weight:700; text-transform:uppercase;">Selected Frame</small>
+                <p><strong id="chasma-frame-name">Titan Eye+ TF-2026 Matte Black</strong></p>
+              </div>
+              <div>
+                <small style="color:var(--text-muted); font-weight:700; text-transform:uppercase;">Lens Package</small>
+                <p><strong id="chasma-lens-name">Essilor Crizal Prevencia 1.56 Blue-Cut</strong></p>
+              </div>
+              <div>
+                <small style="color:var(--text-muted); font-weight:700; text-transform:uppercase;">Expected Delivery</small>
+                <p><strong id="chasma-delivery-date" style="color:var(--secondary);">10 Oct 2026</strong></p>
+              </div>
+              <div>
+                <small style="color:var(--text-muted); font-weight:700; text-transform:uppercase;">Payment Summary</small>
+                <p>
+                  Total: <strong id="chasma-total-amount">₹4,700</strong> |
+                  Adv: <span id="chasma-advance-amount">₹2,000</span> |
+                  <span style="color:var(--rose); font-weight:800;" id="chasma-due-amount">Due: ₹2,700</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- VISUAL TIMELINE STEPPER -->
+            <h4 style="font-size:0.9rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px;">
+              Chasma Production Timeline:
+            </h4>
+            
+            <div class="timeline-stepper" id="chasma-stepper">
+              <!-- Steps dynamically highlighted via JS -->
+              <div class="timeline-step completed" data-step="1">
+                <div class="step-bubble"><i class="fa-solid fa-check"></i></div>
+                <div class="step-label">Prescription Received</div>
+              </div>
+              <div class="timeline-step completed" data-step="2">
+                <div class="step-bubble"><i class="fa-solid fa-check"></i></div>
+                <div class="step-label">Frame Selected</div>
+              </div>
+              <div class="timeline-step current" data-step="3">
+                <div class="step-bubble"><i class="fa-solid fa-gear fa-spin"></i></div>
+                <div class="step-label">Lens Processing</div>
+              </div>
+              <div class="timeline-step" data-step="4">
+                <div class="step-bubble">4</div>
+                <div class="step-label">Fitting in Lab</div>
+              </div>
+              <div class="timeline-step" data-step="5">
+                <div class="step-bubble">5</div>
+                <div class="step-label">Quality Check</div>
+              </div>
+              <div class="timeline-step" data-step="6">
+                <div class="step-bubble">6</div>
+                <div class="step-label">Ready for Pickup</div>
+              </div>
+              <div class="timeline-step" data-step="7">
+                <div class="step-bubble">7</div>
+                <div class="step-label">Delivered</div>
+              </div>
+            </div>
+
+            <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:12px;">
+              <button class="btn btn-outline" id="btn-view-job-rx">
+                <i class="fa-solid fa-file-prescription"></i> View Doctor Prescription
+              </button>
+              <button class="btn btn-primary" id="btn-view-job-inv">
+                <i class="fa-solid fa-receipt"></i> View Tax Invoice
+              </button>
+            </div>
+          </div>
+
+          <!-- LATEST PRESCRIPTION HIGHLIGHT -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-file-medical" style="color:var(--secondary);"></i> Latest Eye Prescription</h3>
+              <button class="btn btn-sm btn-outline" onclick="CustomerApp.viewLatestRxPad()">View Full Rx Pad</button>
+            </div>
+            <div id="latest-rx-container">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: MY PRESCRIPTIONS -->
+        <div id="section-prescriptions" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-file-prescription"></i> Complete Prescription History</h3>
+            </div>
+            <div id="customer-rx-list" style="display:flex; flex-direction:column; gap:16px;"></div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: OPTICAL ORDERS -->
+        <div id="section-orders" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-box-open"></i> All Optical & Chasma Orders</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Job ID</th>
+                    <th>Date</th>
+                    <th>Frame & Lens</th>
+                    <th>Total</th>
+                    <th>Advance Paid</th>
+                    <th>Balance Due</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="customer-orders-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: REPAIRS -->
+        <div id="section-repairs" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-screwdriver-wrench"></i> Frame Repairs & Service Tickets</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ticket #</th>
+                    <th>Date</th>
+                    <th>Frame</th>
+                    <th>Problem Reported</th>
+                    <th>Cost</th>
+                    <th>Balance Due</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="customer-repairs-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 5: INVOICES -->
+        <div id="section-invoices" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-receipt"></i> Invoices & Payment Records</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Date</th>
+                    <th>Doctor Ref</th>
+                    <th>Amount</th>
+                    <th>Paid</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="customer-invoices-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 6: MY PROFILE -->
+        <div id="section-profile" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-user-pen"></i> Personal Profile & Contact Details</h3>
+            </div>
+            <form id="profile-form" onsubmit="event.preventDefault(); CustomerApp.updateProfile();">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Full Name *</label>
+                  <input type="text" id="prof-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Mobile Number (Login ID)</label>
+                  <input type="text" id="prof-phone" class="form-control" readonly style="background:var(--bg-subtle);">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Email Address</label>
+                  <input type="email" id="prof-email" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date of Birth</label>
+                  <input type="date" id="prof-dob" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Gender</label>
+                  <select id="prof-gender" class="form-control">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Residential Address</label>
+                <input type="text" id="prof-address" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Emergency Contact</label>
+                <input type="text" id="prof-emergency" class="form-control">
+              </div>
+
+              <div style="display:flex; justify-content:flex-end;">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Profile Details
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/customer.js"></script>
+</body>
+</html>

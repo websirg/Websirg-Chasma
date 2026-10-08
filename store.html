@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optical Store & Eyewear Catalog — Bhardwaj Chasma Ghar</title>
+  <meta name="description" content="Explore handcrafted frames, prescription glasses, polarized sunglasses and high-index lenses at Bhardwaj Chasma Ghar.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Site Navigation Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-logo">
+        <div class="brand-icon"><i class="fa-solid fa-glasses"></i></div>
+        <div class="brand-info">
+          <h1>Bhardwaj Chasma Ghar</h1>
+          <p>Optical Store & Eyewear</p>
+        </div>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="about.html" class="nav-link">About</a></li>
+        <li><a href="eyecare.html" class="nav-link">Eye Care</a></li>
+        <li><a href="procedures.html" class="nav-link">Eye Procedures</a></li>
+        <li><a href="store.html" class="nav-link active">Optical Store</a></li>
+        <li><a href="contact.html" class="nav-link">Contact</a></li>
+      </ul>
+
+      <div class="header-actions">
+        <div id="auth-user-area">
+          <a href="login.html" class="btn btn-sm btn-outline">Portal Login</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Banner -->
+  <section style="background:linear-gradient(135deg, #f0f9ff, #ffffff); padding:40px 0; border-bottom:1px solid var(--border-light);">
+    <div class="container" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <span class="badge badge-teal">Certified Optical Dispensary</span>
+        <h1 style="font-size:2.2rem; font-weight:800; color:var(--text-main); margin-top:4px;">
+          Optical Eyewear & Frame Catalog
+        </h1>
+        <p style="color:var(--text-muted); font-size:0.95rem;">
+          Explore premium ophthalmic frames, computer eyeglasses, and prescription sunglasses.
+        </p>
+      </div>
+      <div>
+        <a href="doctor.html" class="btn btn-primary">
+          <i class="fa-solid fa-stethoscope"></i> Get Doctor Eye Checkup
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Store Catalog Main -->
+  <section style="padding:48px 0; background:var(--bg-page);">
+    <div class="container" style="display:grid; grid-template-columns: 260px 1fr; gap:32px;">
+      
+      <!-- Filters Sidebar -->
+      <aside>
+        <div class="card" style="position:sticky; top:90px;">
+          <h3 style="font-size:1.05rem; font-weight:800; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border-light);">
+            <i class="fa-solid fa-filter"></i> Filter Frames
+          </h3>
+
+          <!-- Search Filter -->
+          <div class="form-group">
+            <label class="form-label">Search Keyword</label>
+            <input type="text" id="store-search" class="form-control" placeholder="Brand, Model, Color..." oninput="StoreApp.filterCatalog()">
+          </div>
+
+          <!-- Category Filter -->
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="store-category" class="form-control" onchange="StoreApp.filterCatalog()">
+              <option value="All">All Categories</option>
+              <option value="Frames">Prescription Frames</option>
+              <option value="Sunglasses">Polarized Sunglasses</option>
+              <option value="Kids Frames">Kids Flexi-Frames</option>
+            </select>
+          </div>
+
+          <!-- Brand Filter -->
+          <div class="form-group">
+            <label class="form-label">Brand</label>
+            <select id="store-brand" class="form-control" onchange="StoreApp.filterCatalog()">
+              <option value="All">All Brands</option>
+              <option value="Titan Eye+">Titan Eye+</option>
+              <option value="Ray-Ban">Ray-Ban</option>
+              <option value="Fastrack">Fastrack</option>
+              <option value="BCG Signature">BCG Signature</option>
+              <option value="Vogue Eyewear">Vogue Eyewear</option>
+              <option value="Scott Eyewear">Scott Eyewear</option>
+            </select>
+          </div>
+
+          <!-- Price Sort -->
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Sort by Price</label>
+            <select id="store-sort" class="form-control" onchange="StoreApp.filterCatalog()">
+              <option value="featured">Featured First</option>
+              <option value="low-high">Price: Low to High</option>
+              <option value="high-low">Price: High to Low</option>
+            </select>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Products Grid -->
+      <main>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <p style="font-size:0.88rem; color:var(--text-muted);" id="catalog-count-text">Showing 8 eyewear models</p>
+          <div style="font-size:0.82rem; color:var(--emerald); font-weight:700;">
+            <i class="fa-solid fa-truck-fast"></i> Fitting & Lens Verification Included
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap:24px;" id="store-catalog-grid">
+          <!-- Dynamic Products -->
+        </div>
+      </main>
+
+    </div>
+  </section>
+
+  <!-- Product Detail Modal -->
+  <div id="modal-product-detail" class="modal-overlay">
+    <div class="modal-box" style="max-width:700px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="pmodal-title">Frame Specifications</h3>
+        <button class="modal-close" onclick="BCGUI.closeModal('modal-product-detail')">&times;</button>
+      </div>
+      <div class="modal-body" id="pmodal-body">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <footer style="background:#0f172a; color:#f8fafc; padding:40px 0 20px; margin-top:60px;">
+    <div class="container" style="text-align:center; font-size:0.82rem; color:#94a3b8;">
+      <p style="margin-bottom:6px;">&copy; 2026 Bhardwaj Chasma Ghar — Complete Eye Care & Optical Solutions</p>
+      <p>Authorized Dispenser for Essilor, Crizal, Zeiss, Ray-Ban, and Titan.</p>
+    </div>
+  </footer>
+
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const StoreApp = {
+      frames: [],
+
+      init: function() {
+        this.frames = window.BCGStore.getDB().frames || [];
+        this.renderCatalog(this.frames);
+      },
+
+      filterCatalog: function() {
+        const query = (document.getElementById('store-search').value || '').toLowerCase();
+        const cat = document.getElementById('store-category').value;
+        const brand = document.getElementById('store-brand').value;
+        const sort = document.getElementById('store-sort').value;
+
+        let filtered = this.frames.filter(f => {
+          const matchesQuery = !query || f.brand.toLowerCase().includes(query) || f.model.toLowerCase().includes(query) || f.color.toLowerCase().includes(query);
+          const matchesCat = (cat === 'All') || (f.category === cat);
+          const matchesBrand = (brand === 'All') || (f.brand === brand);
+          return matchesQuery && matchesCat && matchesBrand;
+        });
+
+        if (sort === 'low-high') filtered.sort((a, b) => a.price - b.price);
+        else if (sort === 'high-low') filtered.sort((a, b) => b.price - a.price);
+
+        this.renderCatalog(filtered);
+      },
+
+      renderCatalog: function(list) {
+        const grid = document.getElementById('store-catalog-grid');
+        const countText = document.getElementById('catalog-count-text');
+        if (countText) countText.textContent = `Showing ${list.length} optical model${list.length === 1 ? '' : 's'}`;
+
+        if (list.length === 0) {
+          grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);"><p>No frames match your selected filters.</p></div>';
+          return;
+        }
+
+        grid.innerHTML = list.map(f => `
+          <div class="card" style="margin-bottom:0; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="position:relative; margin-bottom:12px;">
+                <img src="${f.image}" alt="${f.brand} ${f.model}" style="width:100%; height:180px; object-fit:cover; border-radius:var(--radius-md);">
+                ${f.stock <= 3 ? '<span class="badge badge-danger" style="position:absolute; top:8px; right:8px;">Low Stock</span>' : ''}
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span class="badge badge-info">${f.brand}</span>
+                <span class="badge badge-neutral">${f.frameType}</span>
+              </div>
+              <h4 style="font-size:1.05rem; font-weight:800; margin-bottom:4px; line-height:1.2;">${f.model}</h4>
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">${f.color} • ${f.size || 'M'}</p>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; margin-top:8px;">
+                <div>
+                  <strong style="font-size:1.2rem; color:var(--primary);">${BCGUI.formatCurrency(f.price)}</strong>
+                  <s style="color:var(--text-muted); font-size:0.78rem; margin-left:4px;">${BCGUI.formatCurrency(f.mrp)}</s>
+                </div>
+                <small style="color:var(--emerald); font-weight:700;">In Stock</small>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <button class="btn btn-sm btn-outline" onclick="StoreApp.openDetail('${f.id}')">View Specs</button>
+                <a href="doctor.html" class="btn btn-sm btn-primary">Book Rx</a>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      },
+
+      openDetail: function(frameId) {
+        const frame = this.frames.find(f => f.id === frameId);
+        if (!frame) return;
+
+        document.getElementById('pmodal-title').textContent = `${frame.brand} — ${frame.model}`;
+        const body = document.getElementById('pmodal-body');
+        body.innerHTML = `
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px;">
+            <img src="${frame.image}" alt="${frame.brand}" style="width:100%; height:220px; object-fit:cover; border-radius:var(--radius-md);">
+            <div>
+              <span class="badge badge-teal">${frame.category}</span>
+              <h3 style="font-size:1.3rem; font-weight:800; margin:6px 0;">${frame.model}</h3>
+              <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">${frame.description || 'Precision crafted eyewear.'}</p>
+              <div style="font-size:1.35rem; font-weight:800; color:var(--primary); margin-bottom:6px;">
+                ${BCGUI.formatCurrency(frame.price)} <s style="font-size:0.85rem; color:var(--text-muted);">${BCGUI.formatCurrency(frame.mrp)}</s>
+              </div>
+              <p style="font-size:0.8rem; color:var(--emerald); font-weight:700;"><i class="fa-solid fa-shield-halved"></i> ${frame.warranty || '1 Year Store Warranty'}</p>
+            </div>
+          </div>
+
+          <div style="background:var(--bg-subtle); padding:16px; border-radius:var(--radius-md); font-size:0.86rem;">
+            <h4 style="font-size:0.92rem; font-weight:800; margin-bottom:10px;">Specifications:</h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+              <div><strong>Frame Type:</strong> ${frame.frameType}</div>
+              <div><strong>Material:</strong> ${frame.material}</div>
+              <div><strong>Color Scheme:</strong> ${frame.color}</div>
+              <div><strong>Size:</strong> ${frame.size || 'Medium (52-17-142)'}</div>
+              <div><strong>SKU:</strong> ${frame.sku}</div>
+              <div><strong>Current Stock:</strong> ${frame.stock} units available</div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
+            <button class="btn btn-outline" onclick="BCGUI.closeModal('modal-product-detail')">Close</button>
+            <a href="doctor.html" class="btn btn-primary">Consult Doctor For Number</a>
+          </div>
+        `;
+
+        BCGUI.openModal('modal-product-detail');
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      StoreApp.init();
+    });
+  </script>
+</body>
+</html>

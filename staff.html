@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optical Dispensing & Workshop Staff Panel — Bhardwaj Chasma Ghar</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Staff Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="brand-icon"><i class="fa-solid fa-glasses"></i></div>
+          <div class="brand-info">
+            <h1>Bhardwaj</h1>
+            <p>Optical Staff Panel</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <p class="nav-section-title">Optical Operations</p>
+        <a href="#jobs" class="sidebar-item active" onclick="StaffApp.showSection('jobs', this)">
+          <i class="fa-solid fa-list-check"></i> Chasma Optical Jobs
+        </a>
+        <a href="#repairs" class="sidebar-item" onclick="StaffApp.showSection('repairs', this)">
+          <i class="fa-solid fa-screwdriver-wrench"></i> Frame Repairs
+        </a>
+        <a href="#inventory" class="sidebar-item" onclick="StaffApp.showSection('inventory', this)">
+          <i class="fa-solid fa-glasses"></i> Frame Catalog & Stock
+        </a>
+        <a href="#invoices" class="sidebar-item" onclick="StaffApp.showSection('invoices', this)">
+          <i class="fa-solid fa-file-invoice-dollar"></i> Invoices & Billing
+        </a>
+
+        <p class="nav-section-title" style="margin-top:16px;">Quick Access</p>
+        <a href="doctor.html" class="sidebar-item">
+          <i class="fa-solid fa-user-doctor"></i> Doctor OPD Panel
+        </a>
+        <a href="customer.html" class="sidebar-item">
+          <i class="fa-solid fa-user"></i> Customer Portal View
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-snippet">
+          <div class="user-avatar" id="staff-avatar">MS</div>
+          <div class="user-meta">
+            <h4 id="staff-name">Manoj Sharma</h4>
+            <p>Senior Optometrist</p>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="BCGAuth.logout()" style="margin-left:auto; padding:6px 8px;" title="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <div style="display:flex; align-items:center; gap:16px;">
+          <h2 style="font-size:1.15rem; font-weight:800;" id="page-title">Optical Dispensing & Chasma Jobs</h2>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="btn btn-sm btn-primary" onclick="StaffApp.openNewRepairModal()">
+            <i class="fa-solid fa-screwdriver-wrench"></i> New Repair Ticket
+          </button>
+          <a href="customer.html" class="btn btn-sm btn-outline" title="Switch to Customer">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i> Switch Role
+          </a>
+        </div>
+      </header>
+
+      <div class="page-body">
+        
+        <!-- SECTION 1: OPTICAL JOBS -->
+        <div id="section-jobs">
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-icon primary"><i class="fa-solid fa-file-prescription"></i></div>
+              <div class="stat-info">
+                <p>New Prescriptions</p>
+                <h3 id="stat-new-jobs">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon amber"><i class="fa-solid fa-gear fa-spin"></i></div>
+              <div class="stat-info">
+                <p>In Lab Production</p>
+                <h3 id="stat-lab-jobs">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon emerald"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-info">
+                <p>Ready for Pickup</p>
+                <h3 id="stat-ready-jobs">0</h3>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon rose"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+              <div class="stat-info">
+                <p>Pending Dues</p>
+                <h3 id="stat-pending-dues">₹0</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-list-check" style="color:var(--primary);"></i> Active Chasma / Optical Production Orders</h3>
+              <div style="display:flex; gap:10px;">
+                <input type="text" id="job-search-input" class="form-control" style="width:240px; padding:6px 10px; font-size:0.85rem;" placeholder="Search by Job # or Name..." onkeyup="StaffApp.filterJobs()">
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Job ID</th>
+                    <th>Customer</th>
+                    <th>Prescription Ref</th>
+                    <th>Frame & Lens</th>
+                    <th>Total / Due</th>
+                    <th>Current Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="jobs-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: REPAIR MANAGEMENT -->
+        <div id="section-repairs" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title"><i class="fa-solid fa-screwdriver-wrench" style="color:var(--amber);"></i> Chasma Repair & Service Center</h3>
+                <small style="color:var(--text-muted);">Hinge screws, ultrasonic cleaning, nose pad replacement, and frame alignment</small>
+              </div>
+              <button class="btn btn-sm btn-primary" onclick="StaffApp.openNewRepairModal()">
+                <i class="fa-solid fa-plus"></i> New Repair Job
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Repair ID</th>
+                    <th>Customer</th>
+                    <th>Frame Specs</th>
+                    <th>Reported Issue</th>
+                    <th>Est. / Final Cost</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="repairs-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: FRAME CATALOG & INVENTORY -->
+        <div id="section-inventory" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-glasses"></i> Optical Frame Catalog & Live Stock</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>SKU / Brand</th>
+                    <th>Model & Color</th>
+                    <th>Type & Material</th>
+                    <th>MRP / Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: INVOICES & BILLING -->
+        <div id="section-invoices" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fa-solid fa-file-invoice-dollar"></i> Optical Tax Invoices & Payments</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Invoice #</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Job Ref</th>
+                    <th>Total</th>
+                    <th>Advance Paid</th>
+                    <th>Due Balance</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="invoices-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: OPTICAL JOB WORKFLOW (Frame & Lens Selection, Billing, Production Status) -->
+  <div id="modal-job-editor" class="modal-overlay">
+    <div class="modal-box" style="max-width:840px;">
+      <div class="modal-header">
+        <div>
+          <span class="badge badge-info" id="edit-job-badge">Job In Production</span>
+          <h3 class="modal-title" id="edit-job-title" style="margin-top:4px;">Optical Job #BCG-00125</h3>
+        </div>
+        <button class="modal-close" onclick="BCGUI.closeModal('modal-job-editor')">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Patient & Doctor's Exact Prescription Bar -->
+        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:var(--radius-md); padding:16px; margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+            <div>
+              <strong id="edit-job-patient">Rahul Sharma</strong> (Phone: <span id="edit-job-phone">9876543210</span>)
+              <br><small style="color:var(--text-muted);">Prescription Ref: <strong id="edit-job-rx-ref">RX-3001</strong> by <span id="edit-job-doctor">Dr. Alok Bhardwaj</span></small>
+            </div>
+            <div>
+              <button class="btn btn-sm btn-outline" id="btn-job-360" onclick="StaffApp.viewSelectedPatient360()">Customer 360°</button>
+            </div>
+          </div>
+
+          <!-- Doctor's Exact Rx Grid -->
+          <div style="background:#fff; border-radius:var(--radius-sm); border:1px solid var(--border-light); padding:10px;">
+            <table class="rx-table" style="box-shadow:none; margin-bottom:0;">
+              <thead>
+                <tr>
+                  <th>Eye</th>
+                  <th>SPH</th>
+                  <th>CYL</th>
+                  <th>AXIS</th>
+                  <th>ADD</th>
+                  <th>PD (mm)</th>
+                </tr>
+              </thead>
+              <tbody id="edit-job-rx-table-body">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Frame Selection -->
+        <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; color:var(--text-main);">
+          <i class="fa-solid fa-glasses" style="color:var(--primary);"></i> 1. Frame Selection
+        </h4>
+        <div class="form-row" style="margin-bottom:16px;">
+          <div class="form-group" style="flex:2;">
+            <label class="form-label">Select Frame from Inventory *</label>
+            <select id="edit-frame-select" class="form-control" onchange="StaffApp.onFrameSelected(this.value)">
+              <option value="">-- Choose Frame --</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Frame Price (₹) *</label>
+            <input type="number" id="edit-frame-price" class="form-control" onchange="StaffApp.recalculateJobBill()">
+          </div>
+        </div>
+
+        <!-- Lens Selection -->
+        <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; color:var(--text-main);">
+          <i class="fa-solid fa-eye" style="color:var(--secondary);"></i> 2. Lens Selection
+        </h4>
+        <div class="form-row" style="margin-bottom:16px;">
+          <div class="form-group" style="flex:2;">
+            <label class="form-label">Select Lens Package *</label>
+            <select id="edit-lens-select" class="form-control" onchange="StaffApp.onLensSelected(this.value)">
+              <option value="">-- Choose Lens --</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Lens Price (₹) *</label>
+            <input type="number" id="edit-lens-price" class="form-control" onchange="StaffApp.recalculateJobBill()">
+          </div>
+        </div>
+
+        <!-- Billing & Advance Calculation -->
+        <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; color:var(--text-main);">
+          <i class="fa-solid fa-calculator" style="color:var(--emerald);"></i> 3. Billing & Advance Calculation
+        </h4>
+        <div style="background:var(--bg-subtle); padding:16px; border-radius:var(--radius-md); margin-bottom:20px;">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Fitting Charges (₹)</label>
+              <input type="number" id="edit-fitting-charge" class="form-control" value="150" onchange="StaffApp.recalculateJobBill()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Discount (₹)</label>
+              <input type="number" id="edit-discount" class="form-control" value="0" onchange="StaffApp.recalculateJobBill()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Total Amount (₹)</label>
+              <input type="number" id="edit-total" class="form-control" readonly style="font-weight:800; background:#fff;">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Advance Paid (₹) *</label>
+              <input type="number" id="edit-advance" class="form-control" value="0" oninput="StaffApp.recalculateJobBill()" style="font-weight:700; color:var(--primary);">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Balance Due (₹)</label>
+              <input type="number" id="edit-due" class="form-control" readonly style="font-weight:800; color:var(--rose); background:#fff;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Method</label>
+              <select id="edit-payment-method" class="form-control">
+                <option value="UPI (Google Pay / PhonePe)">UPI (Google Pay / PhonePe)</option>
+                <option value="Cash">Cash Counter</option>
+                <option value="Credit / Debit Card">Credit / Debit Card</option>
+                <option value="Net Banking">Net Banking</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Production Status Stepper & Progression -->
+        <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:10px; color:var(--text-main);">
+          <i class="fa-solid fa-timeline" style="color:var(--purple);"></i> 4. Production Workflow & Status
+        </h4>
+        <div class="form-row">
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Change Job Status</label>
+            <select id="edit-job-status" class="form-control">
+              <option value="Prescription Received">1. Prescription Received</option>
+              <option value="Frame Selected">2. Frame Selected</option>
+              <option value="Lens Processing">3. Lens Processing</option>
+              <option value="Fitting">4. Fitting in Workshop</option>
+              <option value="Quality Check">5. Quality Check / Lensometer</option>
+              <option value="Ready">6. Ready for Collection</option>
+              <option value="Delivered">7. Delivered to Customer</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Status Progression Note</label>
+            <input type="text" id="edit-status-note" class="form-control" placeholder="e.g. Edging complete, axis verified 90°">
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label class="form-label">Expected Delivery Date</label>
+            <input type="date" id="edit-expected-delivery" class="form-control">
+          </div>
+        </div>
+
+        <!-- Timeline History Display -->
+        <div style="margin-top:14px; border-top:1px solid var(--border-light); padding-top:14px;">
+          <small style="font-weight:700; color:var(--text-muted); text-transform:uppercase;">Job Timeline History:</small>
+          <div id="edit-job-timeline-list" style="margin-top:8px; display:flex; flex-direction:column; gap:6px; font-size:0.82rem;"></div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="BCGUI.closeModal('modal-job-editor')">Cancel</button>
+        <button class="btn btn-primary" onclick="StaffApp.saveJobModifications()">
+          <i class="fa-solid fa-floppy-disk"></i> Update Optical Job & Invoice
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NEW REPAIR TICKET -->
+  <div id="modal-new-repair" class="modal-overlay">
+    <div class="modal-box" style="max-width:560px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Create Chasma Repair Ticket</h3>
+        <button class="modal-close" onclick="BCGUI.closeModal('modal-new-repair')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-new-repair" onsubmit="event.preventDefault(); StaffApp.submitNewRepair();">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Customer Name *</label>
+              <input type="text" id="rep-name" class="form-control" required placeholder="e.g. Amit Verma">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile Number *</label>
+              <input type="tel" id="rep-phone" class="form-control" required placeholder="10-digit phone">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Frame Description *</label>
+            <input type="text" id="rep-frame" class="form-control" required placeholder="e.g. Ray-Ban Aviator Gold Frame">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Problem / Repair Required *</label>
+            <textarea id="rep-problem" class="form-control" rows="2" required placeholder="e.g. Right temple screw fallen, nose pad replacement, alignment"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Estimated Cost (₹) *</label>
+              <input type="number" id="rep-cost" class="form-control" required value="350">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Advance Deposit (₹)</label>
+              <input type="number" id="rep-advance" class="form-control" value="200">
+            </div>
+          </div>
+
+          <div class="modal-footer" style="padding-left:0; padding-right:0;">
+            <button type="button" class="btn btn-outline" onclick="BCGUI.closeModal('modal-new-repair')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create Repair Ticket</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/staff.js"></script>
+</body>
+</html>
